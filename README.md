@@ -34,6 +34,11 @@ models. It limits the content to non-commercial/private use and requires its
 credits and terms to remain attached. The extractor keeps the upstream
 artifact as the source of truth instead of vendoring those files here.
 
+For development checkouts, `tests/test-vr-interface-parity.sh` verifies that
+the versioned client API and usercmd-sidecar headers have not drifted between
+the engine, campaign game libraries, and SevenKewp. Pass an alternate workspace
+root as its first argument when the repositories are not siblings.
+
 Upstream artifact:
 
 - <https://github.com/Team-Beef-Studios/Lambda1VR/releases/tag/v1.6.2>
