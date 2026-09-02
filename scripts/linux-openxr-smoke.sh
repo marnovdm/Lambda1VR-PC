@@ -112,7 +112,10 @@ elif [[ -n "$maps_file" ]]; then
 	while IFS= read -r line || [[ -n "$line" ]]; do
 		line=${line%%#*}
 		line=${line//[[:space:]]/}
-		[[ -z "$line" ]] || maps+=("$line")
+		if [[ -n "$line" ]]; then
+			[[ "$line" =~ \.[bB][sS][pP]$ ]] && line=${line:0:${#line}-4}
+			maps+=("$line")
+		fi
 	done < "$maps_file"
 else
 	while IFS= read -r map_path; do
