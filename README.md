@@ -39,6 +39,40 @@ Upstream artifact:
 - <https://github.com/Team-Beef-Studios/Lambda1VR/releases/tag/v1.6.2>
 - APK SHA-256: `73ad8d81b36acfd92992039cbbc3da0386fe93450b1182f7b52f39e2e701d5ad`
 
+## Sven 3 Linux staging
+
+`scripts/stage-sven-linux.sh` builds a self-contained Linux launch tree from
+the Sven 3 archive, current Xash and SevenKewp build outputs/content, and a
+legally owned Half-Life `valve` directory. It deliberately excludes the archive's
+legacy Half-Life PAK and links the supplied legal installation as the fallback
+game instead. The destination must not already exist; construction is performed
+in a temporary tree and moved into place only after every install step passes.
+The source-controlled SevenKewp content overlay
+supplies the matching custom HUD, command menu, sprites, and weapon metadata.
+
+```sh
+./scripts/stage-sven-linux.sh \
+  --root /tmp/lambda1vr-sven \
+  --archive /path/to/SvenCoop3.0.zip \
+  --valve /path/to/Half-Life/valve \
+  --xash-build /path/to/xash3d-fwgs/build-linux-openxr \
+  --seven-build /path/to/SevenKewp/build-xash-audit/output \
+  --seven-content /path/to/SevenKewp/sevenkewp \
+  --vgui /path/to/SevenKewp/linux/vgui.so \
+  --apk /path/to/lambda1vr-v1.6.2.apk
+```
+
+Launch the resulting tree with the companion wrapper. It always enables the
+required GoldSrc static-sound translation and the Sven BSP compatibility
+setting; arguments after `--` are passed to Xash without shell evaluation.
+
+```sh
+./scripts/run-sven-linux.sh \
+  --root /tmp/lambda1vr-sven \
+  --runtime /usr/share/openxr/1/openxr_monado.json \
+  -- +map c1a0
+```
+
 ## Linux OpenXR smoke testing
 
 `scripts/linux-openxr-smoke.sh` starts one map or a complete game-directory
