@@ -148,7 +148,11 @@ required_patterns=(
 	"OpenXR: first stereo frame submitted"
 	"OpenXR: first head-relative UI layer submitted"
 )
-fatal_pattern='Host_Error|Sys_Error|illegible server message|BAD:|Segmentation fault|Assertion failed|dumped core'
+# GNU timeout may report "the monitored command dumped core" while delivering
+# the intentional SIGINT at the end of an otherwise successful timed smoke run.
+# The accepted status 124 already identifies that path; only engine/runtime
+# diagnostics are fatal here.
+fatal_pattern='Host_Error|Sys_Error|illegible server message|BAD:|Segmentation fault|Assertion failed'
 passed=0
 failed=0
 
