@@ -5,6 +5,7 @@ usage() {
 	printf '%s\n' \
 		"usage: $0 --root DIR --game NAME (--map NAME | --maps-file FILE | --all-maps)" \
 		"          [--xash FILE] [--runtime FILE] [--seconds N] [--bugcomp FLAGS]" \
+		"          [--display N]" \
 		"          [--set NAME=VALUE]" \
 		"          [--keep-logs DIR]"
 }
@@ -19,11 +20,12 @@ runtime_json=${XR_RUNTIME_JSON:-}
 seconds=12
 keep_logs=
 bugcomp_flags=
+display_index=
 declare -a cvar_settings=()
 
 while (($#)); do
 	case "$1" in
-		--root|--game|--map|--maps-file|--xash|--runtime|--seconds|--bugcomp|--set|--keep-logs)
+		--root|--game|--map|--maps-file|--xash|--runtime|--seconds|--bugcomp|--display|--set|--keep-logs)
 			(($# >= 2)) || { usage >&2; exit 2; }
 			case "$1" in
 				--root) root_dir=$2 ;;
@@ -34,6 +36,7 @@ while (($#)); do
 				--runtime) runtime_json=$2 ;;
 				--seconds) seconds=$2 ;;
 				--bugcomp) bugcomp_flags=$2 ;;
+				--display) display_index=$2 ;;
 				--set) cvar_settings+=("$2") ;;
 				--keep-logs) keep_logs=$2 ;;
 			esac
@@ -67,6 +70,10 @@ selection_count=$all_maps
 [[ "$game_dir" =~ ^[A-Za-z0-9_.-]+$ ]] || { printf '%s\n' "invalid game directory name" >&2; exit 2; }
 [[ -z "$bugcomp_flags" || "$bugcomp_flags" =~ ^[A-Za-z0-9_+.-]+$ ]] || {
 	printf '%s\n' "invalid --bugcomp flags" >&2
+	exit 2
+}
+[[ -z "$display_index" || "$display_index" =~ ^[0-9]+$ ]] || {
+	printf '%s\n' "--display must be a non-negative SDL display index" >&2
 	exit 2
 }
 
@@ -132,6 +139,9 @@ trap cleanup EXIT
 declare -a extra_args=()
 if [[ -n "$bugcomp_flags" ]]; then
 	extra_args+=(-bugcomp "$bugcomp_flags")
+fi
+if [[ -n "$display_index" ]]; then
+	extra_args+=(-display "$display_index")
 fi
 for setting in "${cvar_settings[@]}"; do
 	[[ "$setting" == *=* && "${setting%%=*}" =~ ^[A-Za-z0-9_.-]+$ ]] || {

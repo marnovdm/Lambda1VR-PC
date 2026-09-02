@@ -101,6 +101,8 @@ the same engine option.
 Use `--maps-file FILE` for an ordered campaign manifest or `--all-maps` for a
 startup sweep. The latter proves that maps initialize; it does not replace
 physical play-through testing of transitions, scripted sequences, or weapons.
+Use `--display N` to create the desktop mirror on a specific SDL display, so
+automated VR mirrors can stay off the primary monitor.
 
 ## They Hunger multiplayer overlay
 
