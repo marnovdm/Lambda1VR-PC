@@ -54,8 +54,14 @@ Example using Monado and a staged Sven installation:
   --game sevenkewp \
   --map c1a0 \
   --runtime /usr/share/openxr/1/openxr_monado.json \
+  --bugcomp gsmrf \
   --set sv_precache_bspmodels=0
 ```
+
+SevenKewp restarts ambient sounds for newly joined players with GoldSrc's
+legacy static-sound message. `--bugcomp gsmrf` enables Xash's narrowly scoped
+conversion of that message to the current protocol; Sven launchers must carry
+the same engine option.
 
 Use `--maps-file FILE` for an ordered campaign manifest or `--all-maps` for a
 startup sweep. The latter proves that maps initialize; it does not replace

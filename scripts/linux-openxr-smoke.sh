@@ -4,7 +4,8 @@ set -euo pipefail
 usage() {
 	printf '%s\n' \
 		"usage: $0 --root DIR --game NAME (--map NAME | --maps-file FILE | --all-maps)" \
-		"          [--xash FILE] [--runtime FILE] [--seconds N] [--set NAME=VALUE]" \
+		"          [--xash FILE] [--runtime FILE] [--seconds N] [--bugcomp FLAGS]" \
+		"          [--set NAME=VALUE]" \
 		"          [--keep-logs DIR]"
 }
 
@@ -17,11 +18,12 @@ xash_path=
 runtime_json=${XR_RUNTIME_JSON:-}
 seconds=12
 keep_logs=
+bugcomp_flags=
 declare -a cvar_settings=()
 
 while (($#)); do
 	case "$1" in
-		--root|--game|--map|--maps-file|--xash|--runtime|--seconds|--set|--keep-logs)
+		--root|--game|--map|--maps-file|--xash|--runtime|--seconds|--bugcomp|--set|--keep-logs)
 			(($# >= 2)) || { usage >&2; exit 2; }
 			case "$1" in
 				--root) root_dir=$2 ;;
@@ -31,6 +33,7 @@ while (($#)); do
 				--xash) xash_path=$2 ;;
 				--runtime) runtime_json=$2 ;;
 				--seconds) seconds=$2 ;;
+				--bugcomp) bugcomp_flags=$2 ;;
 				--set) cvar_settings+=("$2") ;;
 				--keep-logs) keep_logs=$2 ;;
 			esac
@@ -62,6 +65,10 @@ selection_count=$all_maps
 }
 [[ "$seconds" =~ ^[1-9][0-9]*$ ]] || { printf '%s\n' "--seconds must be a positive integer" >&2; exit 2; }
 [[ "$game_dir" =~ ^[A-Za-z0-9_.-]+$ ]] || { printf '%s\n' "invalid game directory name" >&2; exit 2; }
+[[ -z "$bugcomp_flags" || "$bugcomp_flags" =~ ^[A-Za-z0-9_+.-]+$ ]] || {
+	printf '%s\n' "invalid --bugcomp flags" >&2
+	exit 2
+}
 
 for dependency in realpath timeout mktemp sed grep find install tail; do
 	command -v "$dependency" >/dev/null || {
@@ -123,6 +130,9 @@ cleanup() {
 trap cleanup EXIT
 
 declare -a extra_args=()
+if [[ -n "$bugcomp_flags" ]]; then
+	extra_args+=(-bugcomp "$bugcomp_flags")
+fi
 for setting in "${cvar_settings[@]}"; do
 	[[ "$setting" == *=* && "${setting%%=*}" =~ ^[A-Za-z0-9_.-]+$ ]] || {
 		printf 'invalid --set value: %s\n' "$setting" >&2
@@ -150,8 +160,8 @@ for map_name in "${maps[@]}"; do
 		cd "$root_dir"
 		timeout --signal=INT --kill-after=3s "${seconds}s" \
 			env XR_RUNTIME_JSON="$runtime_json" \
-			"$xash_path" -dev 2 -game "$game_dir" +set vr_enable 1 \
-			"${extra_args[@]}" +map "$map_name"
+			"$xash_path" -dev 2 "${extra_args[@]}" -game "$game_dir" \
+			+set vr_enable 1 +map "$map_name"
 	) >"$raw_log" 2>&1
 	run_status=$?
 	set -e
