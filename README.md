@@ -38,3 +38,25 @@ Upstream artifact:
 - <https://github.com/Team-Beef-Studios/Lambda1VR/releases/tag/v1.6.2>
 - APK SHA-256: `73ad8d81b36acfd92992039cbbc3da0386fe93450b1182f7b52f39e2e701d5ad`
 
+## Linux OpenXR smoke testing
+
+`scripts/linux-openxr-smoke.sh` starts one map or a complete game-directory
+map set under a selected OpenXR runtime. A passing map must start its game
+server, connect the local client, and submit both stereo and head-relative UI
+layers without a fatal engine or malformed-protocol error. Raw logs are kept
+only when `--keep-logs` is explicitly supplied.
+
+Example using Monado and a staged Sven installation:
+
+```sh
+./scripts/linux-openxr-smoke.sh \
+  --root /path/to/xash-stage \
+  --game sevenkewp \
+  --map c1a0 \
+  --runtime /usr/share/openxr/1/openxr_monado.json \
+  --set sv_precache_bspmodels=0
+```
+
+Use `--maps-file FILE` for an ordered campaign manifest or `--all-maps` for a
+startup sweep. The latter proves that maps initialize; it does not replace
+physical play-through testing of transitions, scripted sequences, or weapons.
