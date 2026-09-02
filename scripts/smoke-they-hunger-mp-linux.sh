@@ -5,7 +5,7 @@ usage() {
 	printf '%s\n' \
 		"usage: $0 --root OVERLAY_ROOT --runtime FILE [--representative | --all-maps]" \
 		"          [--xash FILE] [--seconds N] [--keep-logs DIR] [--bugcomp FLAGS]" \
-		"          [--set NAME=VALUE]"
+		"          [--display N] [--ipc-ignore-version] [--set NAME=VALUE]"
 }
 
 root_dir=
@@ -16,11 +16,13 @@ xash_path=
 seconds=
 keep_logs=
 bugcomp_flags=gsmrf
+display_index=
+ipc_ignore_version=0
 declare -a cvar_settings=()
 
 while (($#)); do
 	case "$1" in
-		--root|--runtime|--xash|--seconds|--keep-logs|--bugcomp|--set)
+		--root|--runtime|--xash|--seconds|--keep-logs|--bugcomp|--display|--set)
 			(($# >= 2)) || { usage >&2; exit 2; }
 			case "$1" in
 				--root) root_dir=$2 ;;
@@ -29,6 +31,7 @@ while (($#)); do
 				--seconds) seconds=$2 ;;
 				--keep-logs) keep_logs=$2 ;;
 				--bugcomp) bugcomp_flags=$2 ;;
+				--display) display_index=$2 ;;
 				--set) cvar_settings+=("$2") ;;
 			esac
 			shift 2
@@ -41,6 +44,10 @@ while (($#)); do
 			}
 			mode=$requested_mode
 			mode_set=1
+			shift
+			;;
+		--ipc-ignore-version)
+			ipc_ignore_version=1
 			shift
 			;;
 		-h|--help)
@@ -69,6 +76,8 @@ declare -a smoke_args=(--root "$root_dir" --game sevenkewp --maps-file "$maps_fi
 [[ -z "$xash_path" ]] || smoke_args+=(--xash "$xash_path")
 [[ -z "$seconds" ]] || smoke_args+=(--seconds "$seconds")
 [[ -z "$keep_logs" ]] || smoke_args+=(--keep-logs "$keep_logs")
+[[ -z "$display_index" ]] || smoke_args+=(--display "$display_index")
+(( ipc_ignore_version == 0 )) || smoke_args+=(--ipc-ignore-version)
 for setting in "${cvar_settings[@]}"; do
 	smoke_args+=(--set "$setting")
 done

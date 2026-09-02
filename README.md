@@ -75,8 +75,12 @@ setting; arguments after `--` are passed to Xash without shell evaluation.
 ./scripts/run-sven-linux.sh \
   --root /tmp/lambda1vr-sven \
   --runtime /usr/share/openxr/1/openxr_monado.json \
+  --display 1 \
   -- +map c1a0
 ```
+
+If a locally built Monado service and its installed 32-bit client library have
+only a harmless minor IPC version mismatch, add `--ipc-ignore-version`.
 
 ## Linux OpenXR smoke testing
 
@@ -94,6 +98,7 @@ Example using Monado and a staged Sven installation:
   --game sevenkewp \
   --map c1a0 \
   --runtime /usr/share/openxr/1/openxr_monado.json \
+  --display 1 \
   --bugcomp gsmrf \
   --set sv_precache_bspmodels=0
 ```
@@ -108,6 +113,9 @@ startup sweep. The latter proves that maps initialize; it does not replace
 physical play-through testing of transitions, scripted sequences, or weapons.
 Use `--display N` to create the desktop mirror on a specific SDL display, so
 automated VR mirrors can stay off the primary monitor.
+`--ipc-ignore-version` opts into Monado's IPC compatibility override when a
+locally built service and installed multilib client differ only in minor
+version; it is deliberately not enabled by default.
 
 ## They Hunger multiplayer overlay
 
@@ -141,11 +149,13 @@ compatibility flag and BSP-model setting.
 ./scripts/smoke-they-hunger-mp-linux.sh \
   --root /tmp/lambda1vr-sven-they-hunger-mp \
   --runtime /usr/share/openxr/1/openxr_monado.json \
+  --display 1 \
   --representative
 
 ./scripts/smoke-they-hunger-mp-linux.sh \
   --root /tmp/lambda1vr-sven-they-hunger-mp \
   --runtime /usr/share/openxr/1/openxr_monado.json \
+  --display 1 \
   --all-maps
 ```
 

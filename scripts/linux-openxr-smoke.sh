@@ -5,7 +5,7 @@ usage() {
 	printf '%s\n' \
 		"usage: $0 --root DIR --game NAME (--map NAME | --maps-file FILE | --all-maps)" \
 		"          [--xash FILE] [--runtime FILE] [--seconds N] [--bugcomp FLAGS]" \
-		"          [--display N]" \
+		"          [--display N] [--ipc-ignore-version]" \
 		"          [--set NAME=VALUE]" \
 		"          [--keep-logs DIR]"
 }
@@ -21,6 +21,7 @@ seconds=12
 keep_logs=
 bugcomp_flags=
 display_index=
+ipc_ignore_version=0
 declare -a cvar_settings=()
 
 while (($#)); do
@@ -44,6 +45,10 @@ while (($#)); do
 			;;
 		--all-maps)
 			all_maps=1
+			shift
+			;;
+		--ipc-ignore-version)
+			ipc_ignore_version=1
 			shift
 			;;
 		-h|--help)
@@ -172,8 +177,12 @@ for map_name in "${maps[@]}"; do
 	set +e
 	(
 		cd "$root_dir"
+		declare -a runtime_env=(XR_RUNTIME_JSON="$runtime_json")
+		if (( ipc_ignore_version )); then
+			runtime_env+=(IPC_IGNORE_VERSION=1)
+		fi
 		timeout --signal=INT --kill-after=3s "${seconds}s" \
-			env XR_RUNTIME_JSON="$runtime_json" \
+			env "${runtime_env[@]}" \
 			"$xash_path" -dev 2 "${extra_args[@]}" -game "$game_dir" \
 			+set vr_enable 1 +map "$map_name"
 	) >"$raw_log" 2>&1
