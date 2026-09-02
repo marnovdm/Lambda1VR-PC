@@ -97,9 +97,17 @@ lowercase() {
 }
 
 declare -A source_case_paths=()
+declare -A approved_archive_case_overrides=(
+	['models/p_9mmar.mdl']='models/p_9mmar.mdl'
+	['models/w_9mmarclip.mdl']='models/w_9mmarclip.mdl'
+)
+declare -a approved_source_override_paths=()
 while IFS= read -r source_path; do
 	[[ -n "$source_path" ]] || continue
 	source_folded=$(lowercase "$source_path")
+	if [[ -v "approved_archive_case_overrides[$source_folded]" ]]; then
+		approved_source_override_paths+=("$source_path")
+	fi
 	source_case_paths["$source_folded"]=$source_path
 done < <(cd "$source_root/$game_dir" && find . -mindepth 1 -printf '%P\n')
 
@@ -130,9 +138,12 @@ while IFS= read -r archive_entry; do
 	archive_case_paths["$archive_folded"]=$relative_path
 	if [[ -v "source_case_paths[$archive_folded]" \
 		&& "${source_case_paths[$archive_folded]}" != "$relative_path" ]]; then
-		printf 'archive path differs only by case from staged content: %s / %s\n' \
-			"${source_case_paths[$archive_folded]}" "$relative_path" >&2
-		exit 1
+		if [[ ! -v "approved_archive_case_overrides[$archive_folded]" \
+			|| "${approved_archive_case_overrides[$archive_folded]}" != "$relative_path" ]]; then
+			printf 'archive path differs only by case from staged content: %s / %s\n' \
+				"${source_case_paths[$archive_folded]}" "$relative_path" >&2
+			exit 1
+		fi
 	fi
 	if [[ "$relative_path" == maps/*.bsp && "${relative_path#maps/}" != */* ]]; then
 		archive_maps+=("${relative_path#maps/}")
@@ -174,6 +185,16 @@ if find "$payload_dir" -type l -print -quit | grep -q .; then
 	printf '%s\n' 'refusing archive payload containing symbolic links' >&2
 	exit 1
 fi
+# Sven 3.0 carries two casing variants of these stock model names.  The They
+# Hunger conversion replaces those case-insensitive Windows keys with its own
+# lowercase assets.  Remove every staged source variant for only these audited
+# keys before overlaying, avoiding nondeterministic lookup on Linux.
+for source_path in "${approved_source_override_paths[@]}"; do
+	source_folded=$(lowercase "$source_path")
+	if [[ "${archive_case_paths[$source_folded]-}" == "${approved_archive_case_overrides[$source_folded]}" ]]; then
+		rm -f -- "$stage_dir/$game_dir/$source_path"
+	fi
+done
 rsync -a -- "$payload_dir/" "$stage_dir/$game_dir/"
 
 for manifest_map in "${manifest_maps[@]}"; do
