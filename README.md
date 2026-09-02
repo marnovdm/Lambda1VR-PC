@@ -101,3 +101,47 @@ the same engine option.
 Use `--maps-file FILE` for an ordered campaign manifest or `--all-maps` for a
 startup sweep. The latter proves that maps initialize; it does not replace
 physical play-through testing of transitions, scripted sequences, or weapons.
+
+## They Hunger multiplayer overlay
+
+`scripts/stage-they-hunger-mp-overlay.sh` overlays the user-supplied *They
+Hunger Multiplayer Map Conversion* archive onto a **copy** of an already staged
+Sven/SevenKewp Linux tree. It does not unpack into or otherwise modify either
+the source stage or the archive. The new destination must not exist and cannot
+be within the source tree; it is built in `/tmp` and moved into place only after
+archive, layout, case-collision, and map-manifest validation succeeds.
+
+The archive is additional game content: obtain and use it only where you are
+authorized to do so. This package does not vendor or redistribute it. The base
+stage still needs the legally owned Half-Life `valve` data, Sven/SevenKewp
+content, Xash build artifacts, and Lambda1VR assets described above.
+
+```sh
+./scripts/stage-they-hunger-mp-overlay.sh \
+  --source-root /tmp/lambda1vr-sven \
+  --destination /tmp/lambda1vr-sven-they-hunger-mp \
+  --archive '/home/obesecatlord/Backup/Downloads/They Hunger Multiplayer Map Conversion.zip'
+```
+
+`templates/they-hunger-mp-maps.txt` is the checked-in, exact 58-BSP inventory
+for this archive. Staging refuses an archive with a different top-level map set
+and installs that inventory in the overlay's `sevenkewp` directory for audit.
+Use the dedicated wrapper for either a four-map startup sample (the default) or
+the manifest-scoped all-map sweep. It retains SevenKewp's required `gsmrf`
+compatibility flag and BSP-model setting.
+
+```sh
+./scripts/smoke-they-hunger-mp-linux.sh \
+  --root /tmp/lambda1vr-sven-they-hunger-mp \
+  --runtime /usr/share/openxr/1/openxr_monado.json \
+  --representative
+
+./scripts/smoke-they-hunger-mp-linux.sh \
+  --root /tmp/lambda1vr-sven-they-hunger-mp \
+  --runtime /usr/share/openxr/1/openxr_monado.json \
+  --all-maps
+```
+
+Both modes are startup smoke tests only. A pass demonstrates OpenXR startup,
+local connection, and first-frame/UI submission; it does not demonstrate a
+complete campaign, transitions, scripted events, or multiplayer gameplay.

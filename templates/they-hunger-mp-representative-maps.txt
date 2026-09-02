@@ -1,0 +1,5 @@
+# Broad startup sample: intro, early, mid-campaign suffix, and final BSP.
+thintro
+they1
+they30a
+they56
