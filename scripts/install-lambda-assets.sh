@@ -101,6 +101,7 @@ actual_sha256=$(sha256sum "$apk_path" | awk '{print $1}')
 unzip -q "$apk_path" \
 	'assets/models/*' \
 	'assets/sprites/*' \
+	'assets/sound/*' \
 	'assets/bshift/models/*' \
 	'assets/gearbox/models/*' \
 	'assets/Hunger/models/*' \
@@ -108,9 +109,10 @@ unzip -q "$apk_path" \
 
 install_common() {
 	local destination=$1
-	mkdir -p -- "$destination/models" "$destination/sprites"
+	mkdir -p -- "$destination/models" "$destination/sprites" "$destination/sound"
 	rsync -a "$temp_dir/extracted/assets/models/" "$destination/models/"
 	rsync -a "$temp_dir/extracted/assets/sprites/" "$destination/sprites/"
+	rsync -a "$temp_dir/extracted/assets/sound/" "$destination/sound/"
 }
 
 install_variant() {

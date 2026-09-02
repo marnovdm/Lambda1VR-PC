@@ -6,7 +6,8 @@ third-party model files.
 
 `scripts/install-lambda-assets.sh` downloads (or accepts a local copy of) the
 official Lambda1VR v1.6.2 APK, verifies its SHA-256 digest, and installs the
-VR-adjusted models and presentation sprites into selected game directories.
+VR-adjusted models, presentation sprites, and weapon sounds into selected game
+directories.
 The official artifact includes distinct model overrides for Blue Shift,
 Opposing Force, and They Hunger. Sven/SevenKewp uses the base Half-Life VR
 model set.
