@@ -86,9 +86,11 @@ only a harmless minor IPC version mismatch, add `--ipc-ignore-version`.
 
 `scripts/linux-openxr-smoke.sh` starts one map or a complete game-directory
 map set under a selected OpenXR runtime. A passing map must start its game
-server, connect the local client, and submit both stereo and head-relative UI
-layers without a fatal engine or malformed-protocol error. Raw logs are kept
-only when `--keep-logs` is explicitly supplied.
+server, connect the local client, initialize the game-DLL VR API, receive valid
+tracked-controller poses, deliver a valid sidecar pose to a ready server game
+DLL, and submit both stereo and head-relative UI layers without a fatal engine,
+malformed-protocol, or resource error. Raw logs are kept only when
+`--keep-logs` is explicitly supplied.
 
 Example using Monado and a staged Sven installation:
 
@@ -116,6 +118,14 @@ automated VR mirrors can stay off the primary monitor.
 `--ipc-ignore-version` opts into Monado's IPC compatibility override when a
 locally built service and installed multilib client differ only in minor
 version; it is deliberately not enabled by default.
+
+Retained logs replace the staged game root and OpenXR runtime path with stable
+placeholders. The same directory receives `manifest.tsv`, which records the
+launcher, engine, renderer, filesystem, runtime, and available client/server
+game-DLL hashes; required acceptance markers; display index; and each map's
+result, exit status, and resource-warning count. Resource warnings fail
+acceptance by default; use `--allow-resource-warnings` only for a reviewed,
+intentional content exception.
 
 ## They Hunger multiplayer overlay
 

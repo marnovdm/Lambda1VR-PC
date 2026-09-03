@@ -6,6 +6,7 @@ usage() {
 		"usage: $0 --root DIR --game NAME (--map NAME | --maps-file FILE | --all-maps)" \
 		"          [--xash FILE] [--runtime FILE] [--seconds N] [--bugcomp FLAGS]" \
 		"          [--display N] [--ipc-ignore-version]" \
+		"          [--allow-resource-warnings]" \
 		"          [--set NAME=VALUE]" \
 		"          [--keep-logs DIR]"
 }
@@ -22,6 +23,7 @@ keep_logs=
 bugcomp_flags=
 display_index=
 ipc_ignore_version=0
+allow_resource_warnings=0
 declare -a cvar_settings=()
 
 while (($#)); do
@@ -49,6 +51,10 @@ while (($#)); do
 			;;
 		--ipc-ignore-version)
 			ipc_ignore_version=1
+			shift
+			;;
+		--allow-resource-warnings)
+			allow_resource_warnings=1
 			shift
 			;;
 		-h|--help)
@@ -82,7 +88,7 @@ selection_count=$all_maps
 	exit 2
 }
 
-for dependency in realpath timeout mktemp sed grep find install tail; do
+for dependency in realpath timeout mktemp sed grep find install tail sha256sum; do
 	command -v "$dependency" >/dev/null || {
 		printf 'missing required command: %s\n' "$dependency" >&2
 		exit 1
@@ -139,7 +145,7 @@ done
 temp_dir=$(mktemp -d /tmp/lambda1vr-openxr-smoke.XXXXXX)
 cleanup() {
 	case "$temp_dir" in
-		/tmp/lambda1vr-openxr-smoke.*) rm -rf -- "$temp_dir" ;;
+		/tmp/lambda1vr-openxr-smoke.*) find -P "$temp_dir" -xdev -depth -delete ;;
 	esac
 }
 trap cleanup EXIT
@@ -163,6 +169,10 @@ required_patterns=(
 	"OpenXR: initialized"
 	"Game started"
 	"client connected"
+	"VR client API v2 initialized"
+	"OpenXR: first tracked controller frame received"
+	"SV: vr_usercmd_sidecar_consumer_ready"
+	"SV: vr_usercmd_sidecar_pose_delivered"
 	"OpenXR: first stereo frame submitted"
 	"OpenXR: first head-relative UI layer submitted"
 )
@@ -173,6 +183,31 @@ required_patterns=(
 fatal_pattern='Host_Error|Sys_Error|illegible server message|BAD:|Segmentation fault|Assertion failed'
 passed=0
 failed=0
+
+if [[ -n "$keep_logs" ]]; then
+	mkdir -p -- "$keep_logs"
+	keep_logs=$(realpath -- "$keep_logs")
+	read -r xash_hash _ < <(sha256sum "$xash_path")
+	read -r runtime_hash _ < <(sha256sum "$runtime_json")
+	{
+		printf 'format\tlambda1vr-openxr-smoke-v1\n'
+		printf 'xash_sha256\t%s\n' "$xash_hash"
+		printf 'runtime_sha256\t%s\n' "$runtime_hash"
+		printf 'game\t%s\n' "$game_dir"
+		printf 'display\t%s\n' "${display_index:-default}"
+		for artifact in libxash.so libref_gl.so filesystem_stdio.so \
+			"$game_dir/cl_dlls/client.so" "$game_dir/dlls/server.so"; do
+			if [[ -f "$root_dir/$artifact" ]]; then
+				read -r artifact_hash _ < <(sha256sum "$root_dir/$artifact")
+				printf '%s_sha256\t%s\n' "${artifact//\//_}" "$artifact_hash"
+			fi
+		done
+		for pattern in "${required_patterns[@]}"; do
+			printf 'required_marker\t%s\n' "$pattern"
+		done
+		printf 'map\tresult\texit_status\tresource_warnings\n'
+	} > "$keep_logs/manifest.tsv"
+fi
 
 for map_name in "${maps[@]}"; do
 	raw_log="$temp_dir/$map_name.raw.log"
@@ -205,6 +240,9 @@ for map_name in "${maps[@]}"; do
 	fi
 
 	resource_errors=$(grep -Eic 'precache failed|File not found|Missing WAVE' "$clean_log" || true)
+	if (( resource_errors > 0 && !allow_resource_warnings )); then
+		map_ok=0
+	fi
 	if (( map_ok )); then
 		printf 'PASS %-24s resource_warnings=%d\n' "$map_name" "$resource_errors"
 		((passed += 1))
@@ -216,8 +254,12 @@ for map_name in "${maps[@]}"; do
 	fi
 
 	if [[ -n "$keep_logs" ]]; then
-		mkdir -p -- "$keep_logs"
-		install -m 600 "$clean_log" "$keep_logs/$map_name.log"
+		result=FAIL
+		(( map_ok )) && result=PASS
+		printf '%s\t%s\t%d\t%d\n' "$map_name" "$result" "$run_status" "$resource_errors" >> "$keep_logs/manifest.tsv"
+		sanitized_log="$temp_dir/$map_name.sanitized.log"
+		sed -e "s|$root_dir|<ROOT>|g" -e "s|$runtime_json|<OPENXR_RUNTIME>|g" "$clean_log" > "$sanitized_log"
+		install -m 600 "$sanitized_log" "$keep_logs/$map_name.log"
 	fi
 done
 
