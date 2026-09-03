@@ -105,11 +105,29 @@ if [[ -z "$xash_path" ]]; then
 fi
 xash_path=$(realpath -- "$xash_path")
 [[ -x "$xash_path" ]] || { printf 'Xash executable not found: %s\n' "$xash_path" >&2; exit 1; }
+[[ "$(dirname -- "$xash_path")" == "$root_dir" ]] || {
+	printf 'Xash executable must be staged directly in the smoke root: %s\n' "$root_dir" >&2
+	exit 1
+}
 [[ -n "$runtime_json" && -f "$runtime_json" ]] || {
 	printf '%s\n' "OpenXR runtime JSON not found; pass --runtime or set XR_RUNTIME_JSON" >&2
 	exit 1
 }
 runtime_json=$(realpath -- "$runtime_json")
+
+declare -a staged_artifacts=(
+	"libxash.so"
+	"libref_gl.so"
+	"filesystem_stdio.so"
+	"$game_dir/cl_dlls/client.so"
+	"$game_dir/dlls/server.so"
+)
+for artifact in "${staged_artifacts[@]}"; do
+	[[ -f "$root_dir/$artifact" ]] || {
+		printf 'required staged artifact not found: %s\n' "$root_dir/$artifact" >&2
+		exit 1
+	}
+done
 
 declare -a maps=()
 if [[ -n "$single_map" ]]; then
@@ -190,17 +208,15 @@ if [[ -n "$keep_logs" ]]; then
 	read -r xash_hash _ < <(sha256sum "$xash_path")
 	read -r runtime_hash _ < <(sha256sum "$runtime_json")
 	{
-		printf 'format\tlambda1vr-openxr-smoke-v1\n'
+		printf 'format\tlambda1vr-openxr-smoke-v2\n'
+		printf 'launcher\t%s\n' "${xash_path##*/}"
 		printf 'xash_sha256\t%s\n' "$xash_hash"
 		printf 'runtime_sha256\t%s\n' "$runtime_hash"
 		printf 'game\t%s\n' "$game_dir"
 		printf 'display\t%s\n' "${display_index:-default}"
-		for artifact in libxash.so libref_gl.so filesystem_stdio.so \
-			"$game_dir/cl_dlls/client.so" "$game_dir/dlls/server.so"; do
-			if [[ -f "$root_dir/$artifact" ]]; then
-				read -r artifact_hash _ < <(sha256sum "$root_dir/$artifact")
-				printf '%s_sha256\t%s\n' "${artifact//\//_}" "$artifact_hash"
-			fi
+		for artifact in "${staged_artifacts[@]}"; do
+			read -r artifact_hash _ < <(sha256sum "$root_dir/$artifact")
+			printf '%s_sha256\t%s\n' "${artifact//\//_}" "$artifact_hash"
 		done
 		for pattern in "${required_patterns[@]}"; do
 			printf 'required_marker\t%s\n' "$pattern"

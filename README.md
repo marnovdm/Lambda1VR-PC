@@ -121,11 +121,13 @@ version; it is deliberately not enabled by default.
 
 Retained logs replace the staged game root and OpenXR runtime path with stable
 placeholders. The same directory receives `manifest.tsv`, which records the
-launcher, engine, renderer, filesystem, runtime, and available client/server
-game-DLL hashes; required acceptance markers; display index; and each map's
-result, exit status, and resource-warning count. Resource warnings fail
-acceptance by default; use `--allow-resource-warnings` only for a reviewed,
-intentional content exception.
+launcher, engine, renderer, filesystem, runtime, and client/server game-DLL
+hashes; required acceptance markers; display index; and each map's result,
+exit status, and resource-warning count. The launcher must be staged directly
+in `--root`, and all five loadable artifacts are required before any map runs,
+so a passing manifest cannot silently omit an executed binary. Resource
+warnings fail acceptance by default; use `--allow-resource-warnings` only for
+a reviewed, intentional content exception.
 
 ## They Hunger multiplayer overlay
 
