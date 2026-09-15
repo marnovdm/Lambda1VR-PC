@@ -47,7 +47,7 @@ done
 [[ -n "$root_dir" && -n "$archive_path" && -n "$valve_dir" && -n "$xash_build" \
 	&& -n "$seven_build" && -n "$seven_content" && -n "$vgui_path" ]] || { usage >&2; exit 2; }
 
-for dependency in realpath unzip rsync mktemp install ln mv; do
+for dependency in realpath unzip rsync mktemp install ln mv find; do
 	command -v "$dependency" >/dev/null || {
 		printf 'missing required command: %s\n' "$dependency" >&2
 		exit 1
@@ -93,11 +93,13 @@ done
 	exit 1
 }
 
-temp_dir=$(mktemp -d /tmp/lambda1vr-sven-stage.XXXXXX)
+temp_parent=$(realpath -- "${TMPDIR:-/tmp}")
+[[ -d "$temp_parent" ]] || { printf 'temporary directory not found: %s\n' "$temp_parent" >&2; exit 1; }
+temp_dir=$(mktemp -d "$temp_parent/lambda1vr-sven-stage.XXXXXX")
 stage_dir="$temp_dir/stage"
 cleanup() {
 	case "$temp_dir" in
-		/tmp/lambda1vr-sven-stage.*) rm -rf -- "$temp_dir" ;;
+		"$temp_parent"/lambda1vr-sven-stage.*) find -P "$temp_dir" -xdev -depth -delete ;;
 	esac
 }
 trap cleanup EXIT

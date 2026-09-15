@@ -51,7 +51,7 @@ done
 	exit 2
 }
 
-for dependency in curl sha256sum unzip rsync mktemp realpath; do
+for dependency in curl sha256sum unzip rsync mktemp realpath find; do
 	command -v "$dependency" >/dev/null || {
 		printf 'missing required command: %s\n' "$dependency" >&2
 		exit 1
@@ -73,10 +73,12 @@ for destination in "$base_dir" "$bshift_dir" "$opfor_dir" "$hunger_dir" "$sven_d
 	[[ -z "$destination" ]] || validate_relative_destination "$destination"
 done
 
-temp_dir=$(mktemp -d /tmp/lambda1vr-pc-assets.XXXXXX)
+temp_parent=$(realpath -- "${TMPDIR:-/tmp}")
+[[ -d "$temp_parent" ]] || { printf 'temporary directory not found: %s\n' "$temp_parent" >&2; exit 1; }
+temp_dir=$(mktemp -d "$temp_parent/lambda1vr-pc-assets.XXXXXX")
 cleanup() {
 	case "$temp_dir" in
-		/tmp/lambda1vr-pc-assets.*) rm -rf -- "$temp_dir" ;;
+		"$temp_parent"/lambda1vr-pc-assets.*) find -P "$temp_dir" -xdev -depth -delete ;;
 	esac
 }
 trap cleanup EXIT

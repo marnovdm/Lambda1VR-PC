@@ -4,6 +4,11 @@ This repository contains desktop packaging glue for the Linux/Windows OpenXR
 port. It intentionally does not redistribute Half-Life data or Lambda1VR's
 third-party model files.
 
+The corresponding public engine and game-code forks, exact branches, retained
+Team Beef behavioral references, and license boundaries are listed in
+[`SOURCES.md`](SOURCES.md). The port keeps Xash as the desktop OpenXR owner and
+reuses Team Beef gameplay through narrow client/server adapters.
+
 `scripts/install-lambda-assets.sh` downloads (or accepts a local copy of) the
 official Lambda1VR v1.6.2 APK, verifies its SHA-256 digest, and installs the
 VR-adjusted models, presentation sprites, and weapon sounds into selected game
@@ -128,6 +133,51 @@ in `--root`, and all five loadable artifacts are required before any map runs,
 so a passing manifest cannot silently omit an executed binary. Resource
 warnings fail acceptance by default; use `--allow-resource-warnings` only for
 a reviewed, intentional content exception.
+
+## Connect to a Sven test server in VR
+
+`scripts/connect-sven-linux.sh` delegates to the existing Sven OpenXR launcher
+and adds a validated remote `+connect` command. It therefore retains the same
+VR enablement, Sven compatibility flags, OpenXR runtime selection, and SDL
+display routing instead of maintaining a second launch path.
+
+```sh
+./scripts/connect-sven-linux.sh \
+  --root /path/to/xash-stage \
+  --server example.net:27015 \
+  --display 1
+```
+
+For a private transfer between machines you own,
+`scripts/create-sven-linux-handoff.sh` replaces the staged `valve` symlink with
+a copy of your supplied Half-Life data and bundles the launch scripts. The
+result contains copyrighted game data and must not be attached to a public
+release or otherwise redistributed.
+
+```sh
+./scripts/create-sven-linux-handoff.sh \
+  --root /path/to/xash-stage \
+  --valve /path/to/Half-Life/valve \
+  --server example.net:27015 \
+  --output /path/to/lambda1vr-sven-linux.tar.zst
+```
+
+After extraction, `./connect-vr.sh` reads the bundled `server.conf` and starts
+directly in OpenXR VR. Pass `--runtime FILE`, `--display N`, or `--server
+HOST:PORT` only when an override is needed.
+
+## Dedicated Sven campaign server
+
+`server/Dockerfile.runtime` is a small architecture-neutral runtime image for
+a natively built Xash dedicated executable and matching SevenKewp server DLL.
+It contains no game data or project binaries. Mount a private server tree at
+`/server`; that tree must provide `xash`, `filesystem_stdio.so`, `valve/`, and
+`sevenkewp/`. The supplied `server.cfg` and `mapcycle.txt` configure the Sven 3
+Half-Life campaign beginning at `c1a0`.
+
+The server and game DLL must share one native ABI. In particular, an ARM64
+host needs the LP64 Xash and SevenKewp branches listed in `SOURCES.md`; it
+cannot load the 32-bit x86 client handoff DLL.
 
 ## They Hunger multiplayer overlay
 
