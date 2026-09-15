@@ -18,6 +18,8 @@ done
 chmod +x "$fixture/stage/xash3d"
 printf '%s\n' client > "$fixture/stage/sevenkewp/cl_dlls/client.so"
 printf '%s\n' server > "$fixture/stage/sevenkewp/dlls/server.so"
+printf '%s\n' crash > "$fixture/stage/sevenkewp/buffer.dat"
+printf '%s\n' log > "$fixture/stage/sevenkewp/engine.log"
 printf '%s\n' game > "$fixture/owned-valve/liblist.gam"
 printf '%s\n' map > "$fixture/owned-valve/maps/c0a0.bsp"
 ln -s "$fixture/owned-valve" "$fixture/stage/valve"
@@ -32,6 +34,10 @@ tar --zstd -xf "$archive" -C "$fixture/extract"
 bundle="$fixture/extract/lambda1vr-sven-linux"
 [[ -f "$bundle/valve/maps/c0a0.bsp" && ! -L "$bundle/valve" ]]
 [[ -x "$bundle/connect-vr.sh" && -x "$bundle/run-sven-linux.sh" ]]
+[[ -f "$bundle/SOURCES.md" && -f "$bundle/BINARY-SHA256SUMS" ]]
+[[ ! -e "$bundle/sevenkewp/buffer.dat" && ! -e "$bundle/sevenkewp/engine.log" ]]
+(cd "$bundle" && sha256sum -c BINARY-SHA256SUMS)
+[[ -z "$(find "$bundle" -perm /022 -print -quit)" ]]
 grep -Fxq 'foundry.example.test:27015' "$bundle/server.conf"
 [[ -z "$(find "$fixture/work" -mindepth 1 -maxdepth 1 -print -quit)" ]]
 

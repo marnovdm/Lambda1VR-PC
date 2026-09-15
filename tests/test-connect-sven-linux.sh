@@ -28,4 +28,13 @@ if "$fixture/connect-vr.sh" --server 'bad;quit:27015'; then
 	exit 1
 fi
 
+# The top-level companion reads its adjacent saved address and forwards options.
+mkdir "$fixture/lambda1vr-sven-linux"
+install -m 755 "$package_root/scripts/launch-sven-vr.sh" "$fixture/launch-sven-vr.sh"
+install -m 755 "$fixture/run-sven-linux.sh" "$fixture/lambda1vr-sven-linux/connect-vr.sh"
+CAPTURE_ARGS="$fixture/args" "$fixture/launch-sven-vr.sh" --display 1
+expected=(--server foundry.example.test:27015 --display 1)
+mapfile -t actual < "$fixture/args"
+[[ "${actual[*]}" == "${expected[*]}" ]]
+
 printf '%s\n' 'PASS: Sven OpenXR connection wrapper arguments'

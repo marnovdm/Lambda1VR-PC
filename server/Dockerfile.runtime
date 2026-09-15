@@ -10,4 +10,4 @@ WORKDIR /server
 EXPOSE 27015/udp
 
 ENTRYPOINT ["/server/xash"]
-CMD ["-dedicated", "-game", "sevenkewp", "-port", "27015", "+maxplayers", "8", "+exec", "server.cfg", "+map", "c1a0"]
+CMD ["-dedicated", "-bugcomp", "gsmrf", "-game", "sevenkewp", "-port", "27015", "+maxplayers", "8", "+exec", "server.cfg", "+map", "c1a0"]

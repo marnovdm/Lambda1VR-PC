@@ -91,14 +91,23 @@ cleanup() {
 trap cleanup EXIT
 
 mkdir -p -- "$bundle_dir/valve"
-rsync -a --exclude=/valve "$root_dir/" "$bundle_dir/"
+rsync -a --exclude=/valve --exclude=buffer.dat --exclude='*.log' "$root_dir/" "$bundle_dir/"
 rsync -a "$valve_dir/" "$bundle_dir/valve/"
 install -m 755 "$script_dir/run-sven-linux.sh" "$bundle_dir/run-sven-linux.sh"
 install -m 755 "$script_dir/connect-sven-linux.sh" "$bundle_dir/connect-vr.sh"
 install -m 644 "$script_dir/../templates/sven-linux-handoff-readme.md" "$bundle_dir/README.md"
+install -m 644 "$script_dir/../SOURCES.md" "$bundle_dir/SOURCES.md"
 printf '%s\n' "$server" > "$bundle_dir/server.conf"
+(
+	cd "$bundle_dir"
+	for artifact in xash3d libxash.so libref_gl.so filesystem_stdio.so libmenu.so \
+		libvgui_support.so vgui.so libopenxr_loader.so.1 \
+		sevenkewp/cl_dlls/client.so sevenkewp/dlls/server.so; do
+		[[ ! -f "$artifact" ]] || sha256sum "$artifact"
+	done
+) > "$bundle_dir/BINARY-SHA256SUMS"
 
-tar --sort=name --owner=0 --group=0 --numeric-owner -C "$temp_dir" -cf - lambda1vr-sven-linux \
+tar --sort=name --owner=0 --group=0 --numeric-owner --mode='u+rwX,go+rX,go-w' -C "$temp_dir" -cf - lambda1vr-sven-linux \
 	| zstd -T0 -10 -q -o "$output_path"
 (
 	cd "$(dirname -- "$output_path")"

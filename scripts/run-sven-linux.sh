@@ -53,7 +53,7 @@ root_dir=$(realpath -- "$root_dir")
 	exit 1
 }
 
-declare -a runtime_env=(env)
+declare -a runtime_env=(env LD_LIBRARY_PATH="$root_dir${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}")
 if [[ -n "$runtime_json" ]]; then
 	runtime_json=$(realpath -- "$runtime_json")
 	runtime_env+=(XR_RUNTIME_JSON="$runtime_json")

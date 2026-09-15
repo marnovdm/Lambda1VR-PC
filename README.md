@@ -9,6 +9,11 @@ Team Beef behavioral references, and license boundaries are listed in
 [`SOURCES.md`](SOURCES.md). The port keeps Xash as the desktop OpenXR owner and
 reuses Team Beef gameplay through narrow client/server adapters.
 
+For the portable Linux Sven test handoff, see [server deployment/build notes](server/README.md),
+[controller-test reproduction](tests/README-monado-controls.md), and
+[validation plus Astra review disposition](VALIDATION.md). These explicitly
+separate simulated Linux evidence from remaining physical-headset/Windows checks.
+
 `scripts/install-lambda-assets.sh` downloads (or accepts a local copy of) the
 official Lambda1VR v1.6.2 APK, verifies its SHA-256 digest, and installs the
 VR-adjusted models, presentation sprites, and weapon sounds into selected game

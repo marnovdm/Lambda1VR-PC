@@ -6,12 +6,13 @@ current Linux handoff:
 
 | Component | Public source | Branch | Recorded commit |
 | --- | --- | --- | --- |
-| Xash3D FWGS engine/OpenXR host | <https://github.com/ObeseCatLord/xash3d-fwgs> | `pc-openxr-lambda-parity` | `b8d673d7` |
+| Xash3D FWGS engine/OpenXR host | <https://github.com/ObeseCatLord/xash3d-fwgs> | `pc-openxr-lambda-parity` | `c9f3ec56` |
 | Base Half-Life VR game code | <https://github.com/ObeseCatLord/hlsdk-portable> | `pc-openxr-lambda-parity` | `ccff5db9` |
 | Blue Shift VR game code | <https://github.com/ObeseCatLord/hlsdk-portable> | `pc-openxr-bshift` | `c61372aa` |
 | Opposing Force VR game code | <https://github.com/ObeseCatLord/hlsdk-portable> | `pc-openxr-opfor` | `861b4cc2` |
 | They Hunger VR game code | <https://github.com/ObeseCatLord/hlsdk-portable> | `pc-openxr-theyhunger` | `db11ca05` |
-| Sven/SevenKewp VR game code | <https://github.com/ObeseCatLord/SevenKewp> | `pc-openxr-lambda-parity` | `4facbc1b` |
+| Sven/SevenKewp VR game code | <https://github.com/ObeseCatLord/SevenKewp> | `pc-openxr-lambda-parity` | `469eefa1` |
+| Bundled 32-bit OpenXR loader | <https://github.com/KhronosGroup/OpenXR-SDK> | checkout | `5d33a1f` |
 
 Behavioral references retained during the port:
 
