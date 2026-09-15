@@ -77,8 +77,10 @@ the demonstrated incompatibilities are boundary fixes, not grounds for a rewrite
 Acceptance remains a Linux **test handoff**, not certification of complete
 Lambda1VR parity across all campaigns and platforms.
 
-Final private archive SHA-256:
-`4bda0b2d8fa5830fc6e2c9ebf67d005805b54d55316adb70828cbac9538f8639`.
-The archive's ten-binary manifest was verified after fresh extraction; that
+The private archive's SHA-256 is supplied in its adjacent `.sha256` file.
+Its ten-binary manifest was verified after fresh extraction; that
 extracted client connected in OpenXR to the rebuilt native server. Source
 revisions are listed in `SOURCES.md` and repeated inside the bundle.
+Final packaging inspection removed an unused absolute `valve/valve` symlink
+back to the source workstation; no binaries changed. Packaging now excludes
+unsafe Valve-data symlinks, with a regression fixture for that exact case.

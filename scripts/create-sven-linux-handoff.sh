@@ -92,7 +92,9 @@ trap cleanup EXIT
 
 mkdir -p -- "$bundle_dir/valve"
 rsync -a --exclude=/valve --exclude=buffer.dat --exclude='*.log' "$root_dir/" "$bundle_dir/"
-rsync -a "$valve_dir/" "$bundle_dir/valve/"
+# A copied installation can contain stale workstation-specific symlinks.
+# Keep safe in-tree links, but do not ship absolute/out-of-tree references.
+rsync -a --safe-links "$valve_dir/" "$bundle_dir/valve/"
 install -m 755 "$script_dir/run-sven-linux.sh" "$bundle_dir/run-sven-linux.sh"
 install -m 755 "$script_dir/connect-sven-linux.sh" "$bundle_dir/connect-vr.sh"
 install -m 644 "$script_dir/../templates/sven-linux-handoff-readme.md" "$bundle_dir/README.md"

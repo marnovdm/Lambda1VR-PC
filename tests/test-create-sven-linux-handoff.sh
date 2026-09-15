@@ -23,6 +23,7 @@ printf '%s\n' log > "$fixture/stage/sevenkewp/engine.log"
 printf '%s\n' game > "$fixture/owned-valve/liblist.gam"
 printf '%s\n' map > "$fixture/owned-valve/maps/c0a0.bsp"
 ln -s "$fixture/owned-valve" "$fixture/stage/valve"
+ln -s "$fixture/owned-valve" "$fixture/owned-valve/valve"
 
 archive="$fixture/output/lambda1vr-sven-linux.tar.zst"
 TMPDIR="$fixture/work" "$package_root/scripts/create-sven-linux-handoff.sh" \
@@ -33,6 +34,7 @@ TMPDIR="$fixture/work" "$package_root/scripts/create-sven-linux-handoff.sh" \
 tar --zstd -xf "$archive" -C "$fixture/extract"
 bundle="$fixture/extract/lambda1vr-sven-linux"
 [[ -f "$bundle/valve/maps/c0a0.bsp" && ! -L "$bundle/valve" ]]
+[[ ! -L "$bundle/valve/valve" ]]
 [[ -x "$bundle/connect-vr.sh" && -x "$bundle/run-sven-linux.sh" ]]
 [[ -f "$bundle/SOURCES.md" && -f "$bundle/BINARY-SHA256SUMS" ]]
 [[ ! -e "$bundle/sevenkewp/buffer.dat" && ! -e "$bundle/sevenkewp/engine.log" ]]
