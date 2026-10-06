@@ -166,6 +166,7 @@ through the menu. To force one at every start, add `+set name value` to the Stea
 | `vr_hud_hand_scale` | `0.0005` | Hand panel size in metres per HUD pixel (digits about 1.2 cm tall) |
 | `vr_hud_hand_tilt` | `-45` | Hand panel tilt in degrees (more negative = facing more upwards) |
 | `vr_hud_hand_yaw` | `90` | Hand panels turned inwards in degrees, mirrored per hand (90 = facing your body, like a watch; 0 = facing back along the controller) |
+| `vr_hud_right_flip` | `1` | Turns the right-hand panel 180° in its plane so both panels read forwards along the arm |
 | `vr_hud_status_offset` | `0 0.06 0.02` | Health/suit panel position relative to the left hand, metres: right, up, back (quote it: `vr_hud_status_offset "0 0.08 0"`) |
 | `vr_hud_ammo_offset` | `0 0.05 0.08` | Ammo panel position relative to the gun hand, metres: right, up, back |
 | `vr_notify` | `0` | `1` = show console messages (top left) over the HUD |
