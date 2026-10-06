@@ -164,11 +164,11 @@ through the menu. To force one at every start, add `+set name value` to the Stea
 | `vr_ui_glow_curve` | `1.6` | Hides faint lines around glowing HUD text; `1` = the original look |
 | `vr_hud_hands` | `1` | Health and suit on a small panel above the left hand, ammo on one behind the gun hand, instead of on the head-locked HUD (the flashlight icon is dropped: the beam shows it). `0` = classic HUD |
 | `vr_hud_hand_scale` | `0.0005` | Hand panel size in metres per HUD pixel (digits about 1.2 cm tall) |
-| `vr_hud_hand_tilt` | `-45` | Hand panel tilt in degrees (more negative = facing more upwards) |
+| `vr_hud_hand_tilt` | `-20` | Hand panel tilt in degrees (more negative = facing more upwards) |
 | `vr_hud_hand_yaw` | `90` | Hand panels turned inwards in degrees, mirrored per hand (90 = facing your body, like a watch; 0 = facing back along the controller) |
 | `vr_hud_right_flip` | `1` | Turns the right-hand panel 180° in its plane so both panels read forwards along the arm |
-| `vr_hud_status_offset` | `0 0.06 0.02` | Health/suit panel position relative to the left hand, metres: right, up, back (quote it: `vr_hud_status_offset "0 0.08 0"`) |
-| `vr_hud_ammo_offset` | `0 0.05 0.08` | Ammo panel position relative to the gun hand, metres: right, up, back |
+| `vr_hud_status_offset` | `0 0.06 0.02` | Health/suit panel position from the left palm, metres: right, up, back (along where the controller points) (quote it: `vr_hud_status_offset "0 0.08 0"`) |
+| `vr_hud_ammo_offset` | `0 0.05 0.08` | Ammo panel position from the gun-hand palm, metres: right, up, back |
 | `vr_notify` | `0` | `1` = show console messages (top left) over the HUD |
 
 ### Graphics and sound
