@@ -162,6 +162,11 @@ through the menu. To force one at every start, add `+set name value` to the Stea
 | `vr_ui_distance` | `1.5` | Panel distance in metres |
 | `vr_ui_offset_x` / `vr_ui_offset_y` | `-0.1` / `0` | Move the panel right/up in metres (negative = left/down), limited to ±1 |
 | `vr_ui_glow_curve` | `1.6` | Hides faint lines around glowing HUD text; `1` = the original look |
+| `vr_hud_hands` | `1` | Health and suit on a small panel above the left hand, ammo on one behind the gun hand, instead of on the head-locked HUD (the flashlight icon is dropped: the beam shows it). `0` = classic HUD |
+| `vr_hud_hand_scale` | `0.0005` | Hand panel size in metres per HUD pixel (digits about 1.2 cm tall) |
+| `vr_hud_hand_tilt` | `-40` | Hand panel tilt in degrees (more negative = facing more upwards) |
+| `vr_hud_status_offset` | `0 0.06 0.02` | Health/suit panel position relative to the left hand, metres: right, up, back (quote it: `vr_hud_status_offset "0 0.08 0"`) |
+| `vr_hud_ammo_offset` | `0 0.05 0.08` | Ammo panel position relative to the gun hand, metres: right, up, back |
 | `vr_notify` | `0` | `1` = show console messages (top left) over the HUD |
 
 ### Graphics and sound
@@ -185,6 +190,7 @@ SteamVR needed, among others:
 
 - **Runs on SteamVR**: OpenXR 1.0 instead of 1.1 (SteamVR rejects 1.1), full-resolution eye rendering straight into
   the swapchains, correct culling at the outer edge of each eye, menu visible without a map loaded.
+- **Hand-mounted HUD**: health and suit on the off hand, ammo on the gun hand (`vr_hud_hands`).
 - **Menus and HUD**: world-locked menu/console panel with a pointer ray and cursor, which also stays put while a map
   loads; HUD panel size/position settings; no faint lines around HUD text; screen fades (death, damage) cover the
   whole view instead of a box on the HUD; console messages hidden.
