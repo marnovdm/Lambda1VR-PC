@@ -134,6 +134,9 @@ for game in "${games[@]}"; do
 	# Steam's own game libraries are not needed (ours are installed below).
 	rsync -a --ignore-existing --exclude='cl_dlls/' --exclude='dlls/' --exclude='SAVE/' \
 		"$half_life/$game/" "$root/$game/"
+	# Desktop window 1280x720 on a fresh install: the HUD is drawn at the window size into the 1280x720 VR UI
+	# texture, so this maps HUD pixels 1:1 (sharp, not stretched). The engine keeps it in video.cfg afterwards.
+	[[ -f $root/$game/video.cfg ]] || printf 'fullscreen "0"\nwidth "1280"\nheight "720"\n' >"$root/$game/video.cfg"
 	for lib in "$out/$game"/cl_dlls/*.so "$out/$game"/dlls/*.so; do
 		install_file "$lib" "$root/$game/${lib#"$out/$game/"}"
 	done

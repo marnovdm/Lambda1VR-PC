@@ -175,6 +175,7 @@ through the menu. To force one at every start, add `+set name value` to the Stea
 |---|---|---|
 | `vr_supersampling` | `1.0` | Eye resolution scale on top of SteamVR's resolution (prefer the SteamVR per-app setting) |
 | `vr_mirror_eye` | `0` | Eye shown in the desktop window (`0` left, `1` right) |
+| `width` / `height` | `1280` / `720` | Desktop window size. The HUD is drawn at this size into the 1280×720 VR HUD image, so 1280×720 is the sharpest; smaller windows blur and stretch the HUD |
 | `snd_effects_scale` | `0.75` | Volume of everything except speech, so voices stand out; `1` = original mix |
 | `host_allow_materials` | `1` when HD textures are installed | `0` = original textures (set by the launcher; remove the `valve/materials` link to turn it off permanently) |
 
