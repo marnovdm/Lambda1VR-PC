@@ -89,7 +89,7 @@ Right-handed defaults. PlayStation VR2 Sense button names first, Oculus Touch / 
 | Grip held + trigger | Secondary fire (alt mode, zoom, …) |
 | Grip, short tap (≤ 0.2 s) | Reload |
 | Stick left / right | Snap turn 45° |
-| Stick up / down, **held 0.15 s** | Open the weapon menu; then each push steps: up = next weapon, down = previous. Trigger selects |
+| Stick up / down, **held 0.15 s** | Open the weapon menu; then each push steps: up = previous weapon, down = next (`vr_weapon_stick_up_next 1` reverses it). Trigger selects |
 | Cross (A) | Jump. Double-tap: crouch-jump |
 | Circle (B) | Crouch (hold) |
 | Stick click (R3) | Use, with the right hand |
@@ -134,6 +134,7 @@ through the menu. To force one at every start, add `+set name value` to the Stea
 | Setting | Default | Meaning |
 |---|---|---|
 | `vr_weapon_stick_hold` | `0.15` | Seconds the right stick must be held up/down before the weapon menu opens (so brushing the stick while turning does not open it). Steps inside the open menu are immediate |
+| `vr_weapon_stick_up_next` | `0` | Weapon menu direction: `0` stick up = previous weapon, down = next (Lambda1VR order); `1` up = next |
 | `vr_weapon_stick_threshold` | `0.85` | How far (0–1) the stick must be pushed for the weapon menu; the push must also be mostly vertical |
 | `vr_laser_doubleclick` | `0.35` | Maximum seconds between the two left stick clicks that cycle the laser sight |
 | `vr_lasersight` | `1` | Laser sight: `1` beam + dot, `2` dot only, `0` off |
@@ -202,7 +203,7 @@ SteamVR needed, among others:
   weapons, sensible crowbar damage and throw strength.
 - **Movement**: no slowly building world tilt, head-relative analog movement with a walk modifier, ladders that
   climb where you look, physical crouch relative to the recentre height.
-- **Controls**: weapon menu with a hold delay and dead zone, up = next weapon; quick swap on Triangle/Y; off-hand
+- **Controls**: weapon menu with a hold delay and dead zone, configurable up/down direction; quick swap on Triangle/Y; off-hand
   use on L3 with the laser sight on a double-click; jump/crouch on Cross/Circle; a menu chord that never toggles
   the laser.
 - **Use**: using things with the left hand works (it was always dropped), and a hand pressed against a button can
