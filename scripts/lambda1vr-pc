@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+# Start Lambda1VR-PC (Xash3D FWGS + OpenXR) in VR through SteamVR.
+#
+# Usage: lambda1vr-pc [-game valve|bshift|gearbox] [xash args...]
+#   lambda1vr-pc                         Half-Life main menu
+#   lambda1vr-pc -game bshift            Blue Shift
+#   lambda1vr-pc +map c0a0               start the campaign without the menu (tram ride)
+#   lambda1vr-pc +load quick             continue from the quicksave
+#
+# Starts SteamVR through Steam when it is not running (headset on and in the room first), so it also works as
+# a non-Steam shortcut in the Steam library. Installed by scripts/install-linux-steamvr.sh.
+#
+# Environment: LAMBDA1VR_ROOT (game tree, default ~/Games/lambda1vr-pc), STEAMVR_DIR (SteamVR install),
+# LAMBDA1VR_LOG (default $LAMBDA1VR_ROOT/lambda1vr-pc.log), LAMBDA1VR_GDB=1 (run under gdb, backtrace to the log).
+set -euo pipefail
+
+root=${LAMBDA1VR_ROOT:-$HOME/Games/lambda1vr-pc}
+log=${LAMBDA1VR_LOG:-$root/lambda1vr-pc.log}
+
+if [[ -z ${STEAMVR_DIR:-} ]]; then
+	for dir in "$HOME/.local/share/Steam/steamapps/common/SteamVR" "$HOME/.steam/steam/steamapps/common/SteamVR" \
+		"$HOME/.var/app/com.valvesoftware.Steam/.local/share/Steam/steamapps/common/SteamVR"; do
+		[[ -f $dir/steamxr_linux32.json ]] && { STEAMVR_DIR=$dir; break; }
+	done
+fi
+# The game is a 32-bit build: SteamVR's 32-bit OpenXR runtime (bin/vrclient.so, i386).
+runtime=${STEAMVR_DIR:-}/steamxr_linux32.json
+
+game=valve
+if [[ ${1:-} == -game ]]; then game=$2; shift 2; fi
+
+[[ -x $root/xash3d && -d $root/$game ]] || { echo "lambda1vr-pc: no $root/xash3d or game folder '$game'" >&2; exit 1; }
+[[ -f $runtime ]] || { echo "lambda1vr-pc: SteamVR's steamxr_linux32.json not found (set STEAMVR_DIR)" >&2; exit 1; }
+
+if ! pgrep -x vrserver >/dev/null; then
+	if ! pgrep -x steam >/dev/null; then
+		echo "lambda1vr-pc: start Steam or SteamVR first (headset on, in the room)." >&2
+		exit 1
+	fi
+	echo "=== $(date '+%F %T') lambda1vr-pc: starting SteamVR" >>"$log"
+	timeout 20 steam steam://rungameid/250820 >/dev/null 2>&1 || true
+	for _ in $(seq 1 90); do pgrep -x vrserver >/dev/null && break; sleep 1; done
+	if ! pgrep -x vrserver >/dev/null; then
+		echo "lambda1vr-pc: SteamVR did not start within 90 s (headset on?)" | tee -a "$log" >&2
+		exit 1
+	fi
+	sleep 8 # let the compositor and the headset display come up before the OpenXR session starts
+fi
+
+# vr_enable 1: VR on. gl_vsync 0 + fps_max 0: the headset paces the game (xrWaitFrame), not the desktop monitor
+# or the engine's 100 fps limiter. crosshair 0: it is drawn at the screen centre, not where the gun points.
+# -console: the ` key opens the console. -log: engine log in $root/engine.log.
+args=(-game "$game" +set vr_enable 1 +set gl_vsync 0 +set fps_max 0 +set crosshair 0 +set cl_showfps 0 -console -log)
+# HD world textures (Half-Life: VR mod pack) linked in by the installer
+[[ -e $root/valve/materials/common ]] && args+=(+set host_allow_materials 1)
+
+cd "$root"
+echo "=== $(date '+%F %T') lambda1vr-pc ${args[*]} $*" >>"$log"
+dbg=()
+[[ -n ${LAMBDA1VR_GDB:-} ]] && dbg=(gdb -q -batch -ex 'set debuginfod enabled off' -ex 'handle SIGPIPE nostop noprint'
+	-ex run -ex 'bt 40' -ex 'info sharedlibrary' --args)
+exec env LD_LIBRARY_PATH="$root${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" XR_RUNTIME_JSON="$runtime" \
+	"${dbg[@]}" ./xash3d "${args[@]}" "$@" >>"$log" 2>&1

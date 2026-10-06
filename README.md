@@ -1,5 +1,22 @@
 # Lambda1VR PC packaging tools
 
+## Linux + SteamVR: play Half-Life in VR
+
+**Start here if you want to play.** One script builds the engine and game code, stages Half-Life, Blue Shift and
+Opposing Force from your Steam copy, adds the Lambda1VR VR models and adds the games to your Steam library:
+
+```sh
+./scripts/install-linux-steamvr.sh
+```
+
+Requirements, controls, settings and troubleshooting: [`docs/linux-steamvr.md`](docs/linux-steamvr.md). This
+fork's engine and game code (fixes from playing through on real hardware with SteamVR) live in the
+[`xash3d-fwgs`](https://git.marno.org/marnom/xash3d-fwgs) and [`hlsdk-portable`](https://git.marno.org/marnom/hlsdk-portable)
+`steamvr-linux*` branches.
+
+The rest of this README describes the upstream packaging and test tools (Sven Co-op, smoke tests).
+
+
 This repository contains desktop packaging glue for the Linux/Windows OpenXR
 port. It intentionally does not redistribute Half-Life data or Lambda1VR's
 third-party model files.

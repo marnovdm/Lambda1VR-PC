@@ -14,6 +14,17 @@ current Linux handoff:
 | Sven/SevenKewp VR game code | <https://github.com/ObeseCatLord/SevenKewp> | `pc-openxr-lambda-parity` | `469eefa1` |
 | Bundled 32-bit OpenXR loader | <https://github.com/KhronosGroup/OpenXR-SDK> | checkout | `5d33a1f` |
 
+The Linux/SteamVR installer (`scripts/install-linux-steamvr.sh`) builds these branches, which carry the
+playtest fixes on top of the commits above:
+
+| Component | Source | Branch | Based on |
+| --- | --- | --- | --- |
+| Xash3D FWGS engine/OpenXR host | <https://git.marno.org/marnom/xash3d-fwgs> | `steamvr-linux` | `pc-openxr-lambda-parity` `c9f3ec56` |
+| Half-Life game code | <https://git.marno.org/marnom/hlsdk-portable> | `steamvr-linux` | `pc-openxr-lambda-parity` `ccff5db9` |
+| Blue Shift game code | <https://git.marno.org/marnom/hlsdk-portable> | `steamvr-linux-bshift` | `pc-openxr-bshift` `c61372aa` |
+| Opposing Force game code | <https://git.marno.org/marnom/hlsdk-portable> | `steamvr-linux-opfor` | `pc-openxr-opfor` `861b4cc2` |
+| 32-bit OpenXR loader | <https://github.com/KhronosGroup/OpenXR-SDK> | tag `release-1.1.63` | |
+
 Behavioral references retained during the port:
 
 - <https://github.com/Team-Beef-Studios/Lambda1VR>
