@@ -48,6 +48,8 @@ What it does (all steps can be skipped, see `--help`):
 4. Installs the Lambda1VR VR weapon models, hands, sprites and sounds: it downloads the official Lambda1VR v1.6.2 APK
    from Team Beef's GitHub release and checks its SHA-256 (`scripts/install-lambda-assets.sh`). These assets are
    for private, non-commercial use; their readme is copied next to them.
+   The flashlight model's orange logo and button are then painted over with the handle's black
+   (`scripts/patch-torch-model.py`, keeps `v_torch.mdl.orig`; runs on every install).
 5. Links the Half-Life: VR mod's HD world textures, if that mod is installed.
 6. Installs the launcher `~/.local/bin/lambda1vr-pc`.
 7. Adds **Half-Life VR**, **Blue Shift VR** and **Opposing Force VR** to the Steam library, with artwork made from
@@ -55,7 +57,7 @@ What it does (all steps can be skipped, see `--help`):
    the command to run later (`scripts/steam-shortcuts.py`).
 
 **Update:** pull this repository and run the installer again. It fetches and rebuilds the engine and game code and
-never overwrites your settings, saves or installed assets.
+never overwrites your settings, saves or installed assets (apart from the flashlight paint-over above).
 
 **Uninstall:** delete `~/Games/lambda1vr-pc`, `~/.cache/lambda1vr-pc` and `~/.local/bin/lambda1vr-pc`, and remove the
 shortcuts in Steam.
@@ -102,7 +104,7 @@ Right-handed defaults. PlayStation VR2 Sense button names first, Oculus Touch / 
 | Stick | Move, in the direction you look (analog) |
 | Trigger | Walk (slow, quiet) |
 | Square (X) | Flashlight on/off |
-| Triangle (Y) | Previous weapon (quick swap) |
+| Triangle (Y), hold | **Weapon grid** on the left arm: point at a weapon with the gun hand (its laser shows where), let go of Triangle to switch to it; let go while pointing at nothing to cancel |
 | Stick click (L3) | Use, with the left hand: doors, buttons, chargers (hold) |
 | Stick double-click | Cycle the laser sight: beam + dot → dot → off. While scoped: toggle scope smoothing |
 | Hand behind your shoulder + Square (X) | **Quicksave** (the controller pulses) |
@@ -133,6 +135,7 @@ through the menu. To force one at every start, add `+set name value` to the Stea
 
 | Setting | Default | Meaning |
 |---|---|---|
+| `vr_weapon_pointer` | `1` | Triangle (Y) shows the weapon grid while held (point and release to switch). `0` = Triangle switches to the previous weapon |
 | `vr_weapon_stick_hold` | `0.15` | Seconds the right stick must be held up/down before the weapon menu opens (so brushing the stick while turning does not open it). Steps inside the open menu are immediate |
 | `vr_weapon_stick_up_next` | `0` | Weapon menu direction: `0` stick up = previous weapon, down = next (Lambda1VR order); `1` up = next |
 | `vr_weapon_stick_threshold` | `0.85` | How far (0–1) the stick must be pushed for the weapon menu; the push must also be mostly vertical |
@@ -163,13 +166,16 @@ through the menu. To force one at every start, add `+set name value` to the Stea
 | `vr_ui_distance` | `1.5` | Panel distance in metres |
 | `vr_ui_offset_x` / `vr_ui_offset_y` | `-0.1` / `0` | Move the panel right/up in metres (negative = left/down), limited to ±1 |
 | `vr_ui_glow_curve` | `1.6` | Hides faint lines around glowing HUD text; `1` = the original look |
-| `vr_hud_hands` | `1` | Health and suit on a small panel above the left hand, ammo on one behind the gun hand, instead of on the head-locked HUD (the flashlight icon is dropped: the beam shows it). `0` = classic HUD |
+| `vr_hud_hands` | `1` | Health and suit side by side on the flashlight handle (with the drowning/freezing/poison/... icons to their right while they flash), ammo behind the gun hand, instead of on the head-locked HUD (the flashlight icon is dropped: the beam shows it). `0` = classic HUD |
 | `vr_hud_hand_scale` | `0.0005` | Hand panel size in metres per HUD pixel (digits about 1.2 cm tall) |
 | `vr_hud_hand_tilt` | `-20` | Hand panel tilt in degrees (more negative = facing more upwards) |
 | `vr_hud_hand_yaw` | `90` | Hand panels turned inwards in degrees, mirrored per hand (90 = facing your body, like a watch; 0 = facing back along the controller) |
 | `vr_hud_right_flip` | `0` | `1` turns the right-hand panel 180° in its plane (text along the arm towards the fingers instead of the elbow) |
-| `vr_hud_status_offset` | `0 0.035 0.02` | Health/suit panel position from the left palm, metres: right, up, back (along where the controller points) (quote it: `vr_hud_status_offset "0 0.08 0"`) |
+| `vr_hud_status_offset` | `0.025 0.035 -0.02` | Health/suit panel position from the left hand as you see it in game (the flashlight), metres: right, up, back (along where the controller points) (quote it: `vr_hud_status_offset "0 0.08 0"`) |
 | `vr_hud_ammo_offset` | `0 0.025 0.08` | Ammo panel position from the gun-hand palm, metres: right, up, back |
+| `vr_weapon_pointer_offset` | `0 0.035 -0.15` | Weapon grid centre from the left hand in game, metres: right, up, back (`-0.15` = out past the flashlight) |
+| `vr_weapon_pointer_scale` | `0.0005` | Weapon grid size in metres per HUD pixel (the Half-Life grid is about 44 cm long) |
+| `vr_weapon_pointer_yaw` | `60` | Weapon grid turn in degrees, like `vr_hud_hand_yaw` (lower = far end turned more towards you) |
 | `vr_notify` | `0` | `1` = show console messages (top left) over the HUD |
 
 ### Graphics and sound
@@ -180,7 +186,14 @@ through the menu. To force one at every start, add `+set name value` to the Stea
 | `vr_mirror_eye` | `0` | Eye shown in the desktop window (`0` left, `1` right) |
 | `width` / `height` | `1280` / `720` | Desktop window size. The HUD is drawn at this size into the 1280×720 VR HUD image, so 1280×720 is the sharpest; smaller windows blur and stretch the HUD |
 | `snd_effects_scale` | `0.75` | Volume of everything except speech, so voices stand out; `1` = original mix |
+| `room_off` | `0` | `1` = no room echo (the original game's reverb in large rooms; also mutes the underwater effect) |
 | `host_allow_materials` | `1` when HD textures are installed | `0` = original textures (set by the launcher; remove the `valve/materials` link to turn it off permanently) |
+
+### Gameplay
+
+| Setting | Default | Meaning |
+|---|---|---|
+| `chargerfix` | `1` (set by the launcher) | Health/HEV chargers give the "denied" sound once you are full instead of charging on while you hold use. `0` = original behaviour. Not saved by the game, so the launcher sets it at every start |
 
 ### Debugging
 
@@ -194,7 +207,11 @@ SteamVR needed, among others:
 
 - **Runs on SteamVR**: OpenXR 1.0 instead of 1.1 (SteamVR rejects 1.1), full-resolution eye rendering straight into
   the swapchains, correct culling at the outer edge of each eye, menu visible without a map loaded.
-- **Hand-mounted HUD**: health and suit on the off hand, ammo on the gun hand (`vr_hud_hands`).
+- **Hand-mounted HUD**: health and suit on the flashlight handle (plus the damage-type icons), ammo on the gun hand
+  (`vr_hud_hands`); the flashlight model's orange logo and button are painted black by the installer so the panel
+  sits on a plain handle.
+- **Weapon selection by pointing**: hold Triangle/Y for a weapon grid on the left arm, point with the gun hand,
+  release to switch (`vr_weapon_pointer`).
 - **Menus and HUD**: world-locked menu/console panel with a pointer ray and cursor, which also stays put while a map
   loads; HUD panel size/position settings; no faint lines around HUD text; screen fades (death, damage) cover the
   whole view instead of a box on the HUD; console messages hidden.
@@ -203,7 +220,7 @@ SteamVR needed, among others:
   weapons, sensible crowbar damage and throw strength.
 - **Movement**: no slowly building world tilt, head-relative analog movement with a walk modifier, ladders that
   climb where you look, physical crouch relative to the recentre height.
-- **Controls**: weapon menu with a hold delay and dead zone, configurable up/down direction; quick swap on Triangle/Y; off-hand
+- **Controls**: weapon menu with a hold delay and dead zone, configurable up/down direction; off-hand
   use on L3 with the laser sight on a double-click; jump/crouch on Cross/Circle; a menu chord that never toggles
   the laser.
 - **Use**: using things with the left hand works (it was always dropped), and a hand pressed against a button can
@@ -211,6 +228,7 @@ SteamVR needed, among others:
 - **Desktop/window**: full speed and sound when the desktop window does not have focus; the SDL gamepad view of the
   VR controllers no longer interferes.
 - **Sound**: effects slightly quieter than speech.
+- **Wall chargers** stop "charging" once you are full (`chargerfix`, set by the launcher).
 - Fixed crashes (laser sight, `impulse 101`) and missing hands/flashlight models.
 
 ## Known issues

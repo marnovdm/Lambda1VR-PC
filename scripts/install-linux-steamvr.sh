@@ -158,6 +158,13 @@ if ((assets)); then
 	fi
 fi
 
+# Flashlight model: paint its orange lambda-VR logo and button over with the handle's black (the hand HUD's
+# health/suit panel sits on the handle). Idempotent, so it also runs on installs whose assets were already there.
+if [[ -f $root/valve/models/v_torch.mdl ]]; then
+	log "flashlight model: plain handle"
+	python3 "$here/patch-torch-model.py" "$root"
+fi
+
 # --- HD world textures from the free Half-Life: VR mod (Steam app 1908720) -----------------------------------
 if ((textures)); then
 	if hlvr=$(find_app_dir "Half-Life VR Mod") && [[ -d $hlvr/valve/textures/game ]]; then
