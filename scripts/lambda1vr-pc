@@ -49,8 +49,11 @@ fi
 
 # vr_enable 1: VR on. gl_vsync 0 + fps_max 0: the headset paces the game (xrWaitFrame), not the desktop monitor
 # or the engine's 100 fps limiter. crosshair 0: it is drawn at the screen centre, not where the gun points.
+# chargerfix 1: health/HEV wall chargers give the "denied" sound once you are full instead of charging on forever
+# (hlsdk-portable fix, off by default for stock behaviour; a server cvar the game does not save, hence here).
 # -console: the ` key opens the console. -log: engine log in $root/engine.log.
-args=(-game "$game" +set vr_enable 1 +set gl_vsync 0 +set fps_max 0 +set crosshair 0 +set cl_showfps 0 -console -log)
+args=(-game "$game" +set vr_enable 1 +set gl_vsync 0 +set fps_max 0 +set crosshair 0 +set cl_showfps 0
+	+set chargerfix 1 -console -log)
 # HD world textures (Half-Life: VR mod pack) linked in by the installer
 [[ -e $root/valve/materials/common ]] && args+=(+set host_allow_materials 1)
 
