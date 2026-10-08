@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+# Restart a running Lambda1VR-PC game where you are, for the change → try in the headset loop:
+# quicksave through the console FIFO, quit cleanly (config.cfg is written), and start again with +load quick.
+#
+#   lambda1vr-relaunch          save + quit + start again
+#   lambda1vr-relaunch stop     save + quit (then install new libraries)
+#   lambda1vr-relaunch start    start the game that was stopped, from its quicksave
+#
+# Handy when trying out a change (a rebuilt engine, a setting that needs a restart) without leaving the headset.
+# Needs the launcher's console FIFO (lambda1vr-pc with -stdincmd). Refuses to quit when the save did not land
+# (main menu, dead, loading), so nothing is lost. Installed next to lambda1vr-pc by scripts/install-linux-steamvr.sh.
+# Log: $root/lambda1vr-relaunch.log
+set -euo pipefail
+
+root=${LAMBDA1VR_ROOT:-$HOME/Games/lambda1vr-pc}
+launcher=$(dirname "$(readlink -f "$0")")/lambda1vr-pc
+fifo=$root/console.fifo
+state=$root/.relaunch-game
+log=$root/lambda1vr-relaunch.log
+
+say() { printf '%s\n' "$*"; printf '%s %s\n' "$(date '+%F %T')" "$*" >>"$log"; }
+die() { say "lambda1vr-relaunch: $*" >&2; exit 1; }
+
+game_pid() { pgrep -x xash3d | head -n 1; }
+
+# send CMD: one console line; the timeout guards against a FIFO with no reader
+send() { timeout 2 sh -c 'printf "%s\n" "$1" >"$2"' _ "$1" "$fifo" || die "could not write '$1' to $fifo (old launcher without -stdincmd?)"; }
+
+stop() {
+	local pid game sav before
+	pid=$(game_pid) || true
+	[[ -n $pid ]] || die "the game is not running"
+	tr '\0' '\n' </proc/"$pid"/cmdline | grep -qx -- -stdincmd || die "the running game has no console FIFO (started by an old launcher)"
+	game=$(tr '\0' '\n' </proc/"$pid"/cmdline | grep -A1 -x -- -game | tail -n 1)
+	[[ -n $game ]] || game=valve
+	sav=$root/$game/SAVE/quick.sav
+	before=$(stat -c %Y "$sav" 2>/dev/null || echo 0)
+
+	send 'save quick'
+	for _ in $(seq 1 50); do
+		(( $(stat -c %Y "$sav" 2>/dev/null || echo 0) > before )) && break
+		sleep 0.2
+	done
+	(( $(stat -c %Y "$sav" 2>/dev/null || echo 0) > before )) || die "quicksave did not land in $sav (menu, dead, loading?); game left running"
+	sleep 0.5 # the screenshot (.bmp) is written right after
+	say "saved $game quick.sav, quitting pid $pid"
+	printf '%s\n' "$game" >"$state"
+
+	send 'quit'
+	for _ in $(seq 1 100); do kill -0 "$pid" 2>/dev/null || break; sleep 0.2; done
+	if kill -0 "$pid" 2>/dev/null; then
+		say "pid $pid still running after 20 s, sending SIGTERM"
+		kill "$pid"
+		sleep 2
+	fi
+	say "stopped"
+}
+
+start() {
+	local game
+	game=$(cat "$state" 2>/dev/null || echo valve)
+	[[ -z $(game_pid) ]] || die "the game is already running"
+	say "starting $game +load quick"
+	setsid -f "$launcher" -game "$game" +load quick </dev/null >/dev/null 2>&1
+	for _ in $(seq 1 50); do [[ -n $(game_pid) ]] && break; sleep 0.2; done
+	[[ -n $(game_pid) ]] || die "the game did not start (see $root/lambda1vr-pc.log)"
+	say "running, pid $(game_pid)"
+}
+
+case "${1:-both}" in
+	stop) stop ;;
+	start) start ;;
+	both) stop; start ;;
+	*) echo "usage: lambda1vr-relaunch [stop|start]" >&2; exit 2 ;;
+esac

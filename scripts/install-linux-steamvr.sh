@@ -184,7 +184,10 @@ if ((launcher)); then
 	sed "s|^root=\${LAMBDA1VR_ROOT:-\$HOME/Games/lambda1vr-pc}|root=\${LAMBDA1VR_ROOT:-$root}|" "$here/lambda1vr-pc" >"$bin_dir/lambda1vr-pc.new"
 	chmod 755 "$bin_dir/lambda1vr-pc.new"
 	mv -f "$bin_dir/lambda1vr-pc.new" "$bin_dir/lambda1vr-pc"
-	log "launcher: $bin_dir/lambda1vr-pc"
+	sed "s|^root=\${LAMBDA1VR_ROOT:-\$HOME/Games/lambda1vr-pc}|root=\${LAMBDA1VR_ROOT:-$root}|" "$here/lambda1vr-relaunch" >"$bin_dir/lambda1vr-relaunch.new"
+	chmod 755 "$bin_dir/lambda1vr-relaunch.new"
+	mv -f "$bin_dir/lambda1vr-relaunch.new" "$bin_dir/lambda1vr-relaunch"
+	log "launcher: $bin_dir/lambda1vr-pc (+ lambda1vr-relaunch)"
 	[[ :$PATH: == *":$bin_dir:"* ]] || warn "$bin_dir is not on your PATH"
 fi
 

@@ -49,17 +49,21 @@ What it does (all steps can be skipped, see `--help`):
    from Team Beef's GitHub release and checks its SHA-256 (`scripts/install-lambda-assets.sh`). These assets are
    for private, non-commercial use; their readme is copied next to them.
    The flashlight model's orange logo and button are then painted over with the handle's black
-   (`scripts/patch-torch-model.py`, keeps `v_torch.mdl.orig`; runs on every install).
+   (`scripts/patch-torch-model.py`, keeps `v_torch.mdl.orig`; runs on every install). Some weapon models are fixed
+   too (`scripts/patch-weapon-models.py`, keeps `*.mdl.orig`): the revolver's reload sound and the Opposing Force
+   Desert Eagle, sniper rifle and M249 reload sounds (the models asked for sound files that never shipped), and a
+   loose shell that hung below the shotgun's grip.
 5. Links the Half-Life: VR mod's HD world textures, if that mod is installed.
-6. Installs the launcher `~/.local/bin/lambda1vr-pc`.
+6. Installs the launcher `~/.local/bin/lambda1vr-pc` and `~/.local/bin/lambda1vr-relaunch` (see Debugging).
 7. Adds **Half-Life VR**, **Blue Shift VR** and **Opposing Force VR** to the Steam library, with artwork made from
    each game's own art and a VR tag. Steam has to be closed for this step; when it is running, the installer prints
    the command to run later (`scripts/steam-shortcuts.py`).
 
 **Update:** pull this repository and run the installer again. It fetches and rebuilds the engine and game code and
-never overwrites your settings, saves or installed assets (apart from the flashlight paint-over above).
+never overwrites your settings, saves or installed assets (apart from the model fixes above).
 
-**Uninstall:** delete `~/Games/lambda1vr-pc`, `~/.cache/lambda1vr-pc` and `~/.local/bin/lambda1vr-pc`, and remove the
+**Uninstall:** delete `~/Games/lambda1vr-pc`, `~/.cache/lambda1vr-pc`, `~/.local/bin/lambda1vr-pc` and
+`~/.local/bin/lambda1vr-relaunch`, and remove the
 shortcuts in Steam.
 
 ## Play
@@ -173,9 +177,10 @@ through the menu. To force one at every start, add `+set name value` to the Stea
 | `vr_ui_offset_x` / `vr_ui_offset_y` | `-0.1` / `0` | Move the panel right/up in metres (negative = left/down), limited to ±1 |
 | `vr_ui_glow_curve` | `1.6` | Hides faint lines around glowing HUD text; `1` = the original look |
 | `vr_hud_hands` | `1` | Health, suit and the flashlight icon (battery; bright = on) side by side on the flashlight handle (with the drowning/freezing/poison/... icons to their right while they flash), ammo behind the gun hand, instead of on the head-locked HUD. `0` = classic HUD |
-| `vr_hud_hand_scale` | `0.0005` | Hand panel size in metres per HUD pixel (digits about 1.2 cm tall) |
-| `vr_hud_hand_tilt` | `-20` | Hand panel tilt in degrees (more negative = facing more upwards) |
-| `vr_hud_hand_yaw` | `90` | Hand panels turned inwards in degrees, mirrored per hand (90 = facing your body, like a watch; 0 = facing back along the controller) |
+| `vr_hud_hand_scale` | `0.0005` | Health panel size in metres per HUD pixel (digits about 1.2 cm tall) |
+| `vr_hud_hand_tilt` | `-20` | Health panel (and weapon grid) tilt in degrees (more negative = facing more upwards) |
+| `vr_hud_hand_yaw` | `90` | Health panel turned inwards in degrees, mirrored per hand (90 = facing your body, like a watch; 0 = facing back along the controller) |
+| `vr_hud_ammo_scale`, `vr_hud_ammo_tilt`, `vr_hud_ammo_yaw` | `0.0005`, `-20`, `90` | The same for the ammo panel. Holding the gun with both hands, the health panel moves under the ammo panel and takes these settings |
 | `vr_hud_right_flip` | `0` | `1` turns the right-hand panel 180° in its plane (text along the arm towards the fingers instead of the elbow) |
 | `vr_hud_status_offset` | `0.025 0.035 -0.02` | Health/suit panel position from the left hand as you see it in game (the flashlight), metres: right, up, back (along where the controller points) (quote it: `vr_hud_status_offset "0 0.08 0"`) |
 | `vr_hud_ammo_offset` | `0 0.025 0.08` | Ammo panel position from the gun-hand palm, metres: right, up, back |
@@ -206,6 +211,12 @@ through the menu. To force one at every start, add `+set name value` to the Stea
 `vr_poseinfo` (head/body angles), `vr_weaponinfo` (weapon model and pose), `vr_testhaptic [amplitude] [Hz]`
 (pulses both controllers).
 
+**Console commands from outside:** the launcher connects the game's console input to
+`~/Games/lambda1vr-pc/console.fifo`, so a terminal can send commands while you are in the headset, one per line:
+`echo 'map c2a3d' > ~/Games/lambda1vr-pc/console.fifo`. `lambda1vr-relaunch` uses it to restart the game where you
+are: quicksave, quit, start again with `+load quick` (`stop` / `start` do the halves, e.g. to install a rebuilt
+engine in between). It refuses to quit when the save did not land.
+
 ## Changes from the upstream port
 
 ObeseCatLord's port was smoke-tested against a simulated Monado headset. Playing it on real hardware through
@@ -215,7 +226,7 @@ SteamVR needed, among others:
   the swapchains, correct culling at the outer edge of each eye, menu visible without a map loaded.
 - **Hand-mounted HUD**: health, suit and the flashlight battery on the flashlight handle (plus the damage-type icons), ammo on the gun hand
   (`vr_hud_hands`); the flashlight model's orange logo and button are painted black by the installer so the panel
-  sits on a plain handle.
+  sits on a plain handle. Holding the gun with both hands, the health panel moves under the ammo panel.
 - **Weapon selection by pointing**: hold Triangle/Y for a weapon grid on the left arm, point with the gun hand,
   release to switch (`vr_weapon_pointer`).
 - **Menus and HUD**: world-locked menu/console panel with a pointer ray and cursor, which also stays put while a map
@@ -235,6 +246,8 @@ SteamVR needed, among others:
   VR controllers no longer interferes.
 - **Sound**: effects slightly quieter than speech.
 - **Wall chargers** stop "charging" once you are full (`chargerfix`, set by the launcher).
+- **Weapon models**: reload sounds for the revolver and the Opposing Force Desert Eagle, sniper rifle and M249; no
+  loose shell under the shotgun.
 - Fixed crashes (laser sight, `impulse 101`) and missing hands/flashlight models.
 
 ## Known issues
