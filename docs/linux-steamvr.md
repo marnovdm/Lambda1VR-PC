@@ -127,7 +127,13 @@ The keyboard and mouse still work on the desktop window; the `` ` `` key opens t
 
 ## Settings
 
-Change them in the console (`` ` `` on the keyboard, e.g. `vr_weapon_stick_hold 0.25`). They are saved when you quit
+**Options → VR in the game menu** has almost all of them, on four pages: *Comfort and movement*, *Weapons*,
+*Hand HUD* and *HUD and cinema*, plus *Recenter*. Point with the laser and click with the trigger; hold the trigger on
+an arrow to run through the values. Positions are in cm, angles in degrees, sizes in % of the default. A change applies
+at once, so close the menu to check it (e.g. look at your arm for the hand panels) and reopen; *Reset page* puts a page
+back to the defaults. World scale and the debug settings are console only.
+
+The tables below are the reference for the console. Change them in the console (`` ` `` on the keyboard, e.g. `vr_weapon_stick_hold 0.25`). They are saved when you quit
 through the menu. To force one at every start, add `+set name value` to the Steam shortcut's launch options or the
 `lambda1vr-pc` command line.
 

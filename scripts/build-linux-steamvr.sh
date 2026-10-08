@@ -102,6 +102,8 @@ fi
 # 2. Engine
 checkout "$src/xash3d-fwgs" "$engine_repo" "$engine_branch"
 log "updating engine submodules"
+# sync first: a submodule URL that changed in .gitmodules (the menu fork) does not reach existing clones otherwise
+run engine git -C "$src/xash3d-fwgs" submodule sync --recursive
 run engine git -C "$src/xash3d-fwgs" submodule update --init --recursive
 log "building the engine"
 (
