@@ -94,9 +94,9 @@ Right-handed defaults. PlayStation VR2 Sense button names first, Oculus Touch / 
 | Trigger | Fire |
 | Grip held + trigger | Secondary fire (alt mode, zoom, …) |
 | Grip, short tap (≤ 0.2 s) | Reload |
-| Stick left / right | Snap turn 45° |
-| Stick up / down, **held 0.15 s** | Open the weapon menu; then each push steps: up = previous weapon, down = next (`vr_weapon_stick_up_next 1` reverses it). Trigger selects |
-| Cross (A) | Jump. Double-tap: crouch-jump |
+| Stick left / right | Turn (smooth; `vr_smoothturn 0` = snap turns of 45°) |
+| Stick up / down, **held 0.15 s** | Only with `vr_weapon_stick_menu 1` (off by default; Triangle's weapon grid replaces it): open the weapon menu; then each push steps: up = previous weapon, down = next (`vr_weapon_stick_up_next 1` reverses it). Trigger selects |
+| Cross (A) | Jump (with `vr_quick_crouchjump 1` a double-tap crouch-jumps) |
 | Circle (B) | Crouch (hold) |
 | Stick click (R3) | Use, with the right hand |
 | Hand behind your head/shoulder + grip | Crowbar while held; let go to switch back |
@@ -120,7 +120,7 @@ Right-handed defaults. PlayStation VR2 Sense button names first, Oculus Touch / 
 | Input | Action |
 |---|---|
 | Both stick clicks together | Menu (pause). The menu panel stays fixed in the room; point with the right hand, trigger clicks |
-| Physically crouch | Crouch (see `vr_enable_crouching` to turn this off) |
+| Physically crouch | Off by default; `vr_enable_crouching 0.85` crouches you when your head goes below 85% of your height |
 | Walk around | Room-scale movement |
 | Ladders | Push forward and look up or down to climb that way; push back or step off at the bottom to get off |
 | Throw grenades / satchels | Throw with your arm; strength follows the hand speed |
@@ -146,21 +146,22 @@ through the menu. To force one at every start, add `+set name value` to the Stea
 | Setting | Default | Meaning |
 |---|---|---|
 | `vr_weapon_pointer` | `1` | Triangle (Y) shows the weapon grid while held (point and release to switch). `0` = Triangle switches to the previous weapon |
+| `vr_weapon_stick_menu` | `0` | `1` = pushing the right stick up/down opens the HUD weapon menu (the original Lambda1VR way) |
 | `vr_weapon_stick_hold` | `0.15` | Seconds the right stick must be held up/down before the weapon menu opens (so brushing the stick while turning does not open it). Steps inside the open menu are immediate |
 | `vr_weapon_stick_up_next` | `0` | Weapon menu direction: `0` stick up = previous weapon, down = next (Lambda1VR order); `1` up = next |
 | `vr_weapon_stick_threshold` | `0.85` | How far (0–1) the stick must be pushed for the weapon menu; the push must also be mostly vertical |
 | `vr_laser_doubleclick` | `0.35` | Maximum seconds between the two left stick clicks that cycle the laser sight |
 | `vr_lasersight` | `1` | Laser sight: `1` beam + dot, `2` dot only, `0` off |
-| `vr_laser_width` / `vr_laser_dot_scale` | `0.3` / `0.12` | Laser beam width and dot size |
+| `vr_laser_width` / `vr_laser_dot_scale` | `0.3` / `0.08` | Laser beam width and dot size |
 | `vr_swap_jumpduck` | `1` | `1`: Cross/A jumps, Circle/B crouches (Half-Life 2 VR layout). `0`: the original Lambda1VR layout (A crouches, B jumps) |
-| `vr_smoothturn` | `0` | `1` = smooth turning instead of snap turning |
+| `vr_smoothturn` | `1` | Smooth turning; `0` = snap turning |
 | `vr_turn_angle` | `45` | Snap-turn angle (degrees), or the smooth-turn speed basis |
 | `vr_walkdirection` | `1` | Stick movement follows `1` your head, `0` the left controller |
-| `vr_enable_crouching` | `0.85` | Physical crouch: you crouch in game when your head is below this fraction of your standing height. `0` turns physical crouching off (button only) |
+| `vr_enable_crouching` | `0` | Physical crouch, off by default (button only). E.g. `0.85`: you crouch in game when your head is below that fraction of your standing height |
 | `vr_height_adjust` | `0.1` | Extra eye height in metres (raise it if the world feels too tall) |
 | `vr_recenter` | (command) | Make your current position and heading the centre (stand where you want to be first) |
 | `vr_ladder_aim` | `0` | Ladder climb direction: `0` look up/down, `1` point the left controller (Lambda1VR) |
-| `vr_quick_crouchjump` | `1` | Double-tap jump to crouch-jump |
+| `vr_quick_crouchjump` | `0` | `1` = double-tap jump to crouch-jump |
 | `vr_reloadtimeoutms` | `200` | Longest right-grip tap (ms) that counts as reload |
 | `vr_control_scheme` | `0` | Lambda1VR control schemes `0`–`3`; add 10 for left-handed (e.g. `10`) |
 | `vr_headtorch` | `0` | `1` = flashlight beam follows your head instead of the left hand |
@@ -173,20 +174,20 @@ through the menu. To force one at every start, add `+set name value` to the Stea
 |---|---|---|
 | `vr_ui_width` | `2.6` | HUD/menu panel width in metres |
 | `vr_ui_height` | `0` | Panel height in metres (`0` = from the width, 16:9) |
-| `vr_ui_distance` | `1.5` | Panel distance in metres |
+| `vr_ui_distance` | `2.2` | Panel distance in metres |
 | `vr_ui_offset_x` / `vr_ui_offset_y` | `-0.1` / `0` | Move the panel right/up in metres (negative = left/down), limited to ±1 |
 | `vr_ui_glow_curve` | `1.6` | Hides faint lines around glowing HUD text; `1` = the original look |
 | `vr_hud_hands` | `1` | Health, suit and the flashlight icon (battery; bright = on) side by side on the flashlight handle (with the drowning/freezing/poison/... icons to their right while they flash), ammo behind the gun hand, instead of on the head-locked HUD. `0` = classic HUD |
 | `vr_hud_hand_scale` | `0.0005` | Health panel size in metres per HUD pixel (digits about 1.2 cm tall) |
 | `vr_hud_hand_tilt` | `-20` | Health panel (and weapon grid) tilt in degrees (more negative = facing more upwards) |
 | `vr_hud_hand_yaw` | `90` | Health panel turned inwards in degrees, mirrored per hand (90 = facing your body, like a watch; 0 = facing back along the controller) |
-| `vr_hud_ammo_scale`, `vr_hud_ammo_tilt`, `vr_hud_ammo_yaw` | `0.0005`, `-20`, `90` | The same for the ammo panel. Holding the gun with both hands, the health panel moves under the ammo panel and takes these settings |
+| `vr_hud_ammo_scale`, `vr_hud_ammo_tilt`, `vr_hud_ammo_yaw` | `0.0005`, `0`, `20` | The same for the ammo panel. Holding the gun with both hands, the health panel moves under the ammo panel and takes these settings |
 | `vr_hud_right_flip` | `0` | `1` turns the right-hand panel 180° in its plane (text along the arm towards the fingers instead of the elbow) |
 | `vr_hud_status_offset` | `0.025 0.035 -0.02` | Health/suit panel position from the left hand as you see it in game (the flashlight), metres: right, up, back (along where the controller points) (quote it: `vr_hud_status_offset "0 0.08 0"`) |
-| `vr_hud_ammo_offset` | `0 0.025 0.08` | Ammo panel position from the gun-hand palm, metres: right, up, back |
-| `vr_weapon_pointer_offset` | `0 0.035 -0.15` | Weapon grid centre from the left hand in game, metres: right, up, back (`-0.15` = out past the flashlight) |
-| `vr_weapon_pointer_scale` | `0.0005` | Weapon grid size in metres per HUD pixel (the Half-Life grid is about 44 cm long) |
-| `vr_weapon_pointer_yaw` | `60` | Weapon grid turn in degrees, like `vr_hud_hand_yaw` (lower = far end turned more towards you) |
+| `vr_hud_ammo_offset` | `-0.01 0.02 -0.05` | Ammo panel position from the gun-hand palm, metres: right, up, back |
+| `vr_weapon_pointer_offset` | `0 0.035 -0.35` | Weapon grid centre from the left hand in game, metres: right, up, back (`-0.35` = out past the flashlight) |
+| `vr_weapon_pointer_scale` | `0.00065` | Weapon grid size in metres per HUD pixel (the Half-Life grid is about 57 cm long) |
+| `vr_weapon_pointer_yaw` | `40` | Weapon grid turn in degrees, like `vr_hud_hand_yaw` (lower = far end turned more towards you) |
 | `vr_notify` | `0` | `1` = show console messages (top left) over the HUD |
 
 ### Graphics and sound
