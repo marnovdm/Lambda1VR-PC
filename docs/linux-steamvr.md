@@ -172,7 +172,7 @@ through the menu. To force one at every start, add `+set name value` to the Stea
 | `vr_ui_distance` | `1.5` | Panel distance in metres |
 | `vr_ui_offset_x` / `vr_ui_offset_y` | `-0.1` / `0` | Move the panel right/up in metres (negative = left/down), limited to ±1 |
 | `vr_ui_glow_curve` | `1.6` | Hides faint lines around glowing HUD text; `1` = the original look |
-| `vr_hud_hands` | `1` | Health and suit side by side on the flashlight handle (with the drowning/freezing/poison/... icons to their right while they flash), ammo behind the gun hand, instead of on the head-locked HUD (the flashlight icon is dropped: the beam shows it). `0` = classic HUD |
+| `vr_hud_hands` | `1` | Health, suit and the flashlight icon (battery; bright = on) side by side on the flashlight handle (with the drowning/freezing/poison/... icons to their right while they flash), ammo behind the gun hand, instead of on the head-locked HUD. `0` = classic HUD |
 | `vr_hud_hand_scale` | `0.0005` | Hand panel size in metres per HUD pixel (digits about 1.2 cm tall) |
 | `vr_hud_hand_tilt` | `-20` | Hand panel tilt in degrees (more negative = facing more upwards) |
 | `vr_hud_hand_yaw` | `90` | Hand panels turned inwards in degrees, mirrored per hand (90 = facing your body, like a watch; 0 = facing back along the controller) |
@@ -213,7 +213,7 @@ SteamVR needed, among others:
 
 - **Runs on SteamVR**: OpenXR 1.0 instead of 1.1 (SteamVR rejects 1.1), full-resolution eye rendering straight into
   the swapchains, correct culling at the outer edge of each eye, menu visible without a map loaded.
-- **Hand-mounted HUD**: health and suit on the flashlight handle (plus the damage-type icons), ammo on the gun hand
+- **Hand-mounted HUD**: health, suit and the flashlight battery on the flashlight handle (plus the damage-type icons), ammo on the gun hand
   (`vr_hud_hands`); the flashlight model's orange logo and button are painted black by the installer so the panel
   sits on a plain handle.
 - **Weapon selection by pointing**: hold Triangle/Y for a weapon grid on the left arm, point with the gun hand,
