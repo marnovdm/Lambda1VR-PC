@@ -164,6 +164,8 @@ if [[ -f $root/valve/models/v_torch.mdl ]]; then
 	log "flashlight model: plain handle"
 	python3 "$here/patch-torch-model.py" "$root"
 fi
+log "weapon models: missing reload sounds"
+python3 "$here/patch-weapon-sounds.py" "$root"
 
 # --- HD world textures from the free Half-Life: VR mod (Steam app 1908720) -----------------------------------
 if ((textures)); then
