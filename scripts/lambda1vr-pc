@@ -52,8 +52,9 @@ fi
 # chargerfix 1: health/HEV wall chargers give the "denied" sound once you are full instead of charging on forever
 # (hlsdk-portable fix, off by default for stock behaviour; a server cvar the game does not save, hence here).
 # -console: the ` key opens the console. -log: engine log in $root/engine.log.
+# -stdincmd: console commands from stdin, which is $root/console.fifo (below).
 args=(-game "$game" +set vr_enable 1 +set gl_vsync 0 +set fps_max 0 +set crosshair 0 +set cl_showfps 0
-	+set chargerfix 1 -console -log)
+	+set chargerfix 1 -console -log -stdincmd)
 # HD world textures (Half-Life: VR mod pack) linked in by the installer
 [[ -e $root/valve/materials/common ]] && args+=(+set host_allow_materials 1)
 
@@ -62,5 +63,11 @@ echo "=== $(date '+%F %T') lambda1vr-pc ${args[*]} $*" >>"$log"
 dbg=()
 [[ -n ${LAMBDA1VR_GDB:-} ]] && dbg=(gdb -q -batch -ex 'set debuginfod enabled off' -ex 'handle SIGPIPE nostop noprint'
 	-ex run -ex 'bt 40' -ex 'info sharedlibrary' --args)
+# Console commands from outside, one per line, while you are in the headset:
+#   echo 'save quick' > ~/Games/lambda1vr-pc/console.fifo
+# Opened read-write, so the game never sees EOF and a writer never blocks while it runs.
+fifo=$root/console.fifo
+[[ -p $fifo ]] || { rm -f "$fifo"; mkfifo -m 600 "$fifo"; }
+exec 0<>"$fifo"
 exec env LD_LIBRARY_PATH="$root${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" XR_RUNTIME_JSON="$runtime" \
 	"${dbg[@]}" ./xash3d "${args[@]}" "$@" >>"$log" 2>&1
