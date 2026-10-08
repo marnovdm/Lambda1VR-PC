@@ -8,8 +8,9 @@
   SAW_*_new.wav, from the models' original mod). They get the stock Opposing Force sounds, at the stock frames.
   The game code plays these animations by index, so a Lambda sequence stands in for the stock one at the same index.
 - The shotgun (Counter-Strike's M3, v_shotgun.mdl) has a loose shell mesh on the M3_SHELL bone that the hand carried
-  into the loading port in CS. Lambda1VR's animations keep that bone at rest in every frame, so the shell hangs below
-  the grip all the time. Its mesh is emptied: the renderer walks the mesh's triangle commands until a 0 count (the
+  into the loading port in CS. Without the CS hands, its parked position between reloads hangs visibly below the grip
+  (start_reload/reload/pump move it about 12 units away and back). Its mesh is emptied, so the reload shows no shell
+  either: the renderer walks the mesh's triangle commands until a 0 count (the
   numtris field is only statistics), so the first command becomes that 0 and numtris 0.
 
 Usage: patch-weapon-models.py [ROOT]   (default ~/Games/lambda1vr-pc; patches valve, bshift, gearbox)

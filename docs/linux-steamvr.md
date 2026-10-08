@@ -52,7 +52,7 @@ What it does (all steps can be skipped, see `--help`):
    (`scripts/patch-torch-model.py`, keeps `v_torch.mdl.orig`; runs on every install). Some weapon models are fixed
    too (`scripts/patch-weapon-models.py`, keeps `*.mdl.orig`): the revolver's reload sound and the Opposing Force
    Desert Eagle, sniper rifle and M249 reload sounds (the models asked for sound files that never shipped), and a
-   loose shell that hung below the shotgun's grip.
+   loose shell that hung below the shotgun's grip between reloads.
 5. Links the Half-Life: VR mod's HD world textures, if that mod is installed.
 6. Installs the launcher `~/.local/bin/lambda1vr-pc` and `~/.local/bin/lambda1vr-relaunch` (see Debugging).
 7. Adds **Half-Life VR**, **Blue Shift VR** and **Opposing Force VR** to the Steam library, with artwork made from
