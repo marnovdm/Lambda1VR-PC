@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fix the sound events of Lambda1VR view models whose sounds are silent.
+"""Fix Lambda1VR view models: silent sounds, and a shell left floating on the shotgun.
 
 - The revolver (models/v_357.mdl, the same file in all three games) has no event in its reload animation: the stock
   model plays weapons/357_reload1.wav from it (event 5004 at frame 70), and the game code's own fallback
@@ -7,8 +7,12 @@
 - Opposing Force's Desert Eagle, M40A1 and M249 animations play sounds that exist nowhere (de_*.wav, scout_*.wav,
   SAW_*_new.wav, from the models' original mod). They get the stock Opposing Force sounds, at the stock frames.
   The game code plays these animations by index, so a Lambda sequence stands in for the stock one at the same index.
+- The shotgun (Counter-Strike's M3, v_shotgun.mdl) has a loose shell mesh on the M3_SHELL bone that the hand carried
+  into the loading port in CS. Lambda1VR's animations keep that bone at rest in every frame, so the shell hangs below
+  the grip all the time. Its mesh is emptied: the renderer walks the mesh's triangle commands until a 0 count (the
+  numtris field is only statistics), so the first command becomes that 0 and numtris 0.
 
-Usage: patch-weapon-sounds.py [ROOT]   (default ~/Games/lambda1vr-pc; patches valve, bshift, gearbox)
+Usage: patch-weapon-models.py [ROOT]   (default ~/Games/lambda1vr-pc; patches valve, bshift, gearbox)
 Run by install-linux-steamvr.sh on every install. Writes MODEL.orig once, then replaces the model via a new file
 + rename (safe while the game runs). Idempotent. A sequence whose events are neither the expected old ones nor the
 new ones (a changed model) is left alone and reported."""
@@ -40,6 +44,10 @@ RULES = {
         "reload1_2": (["weapons/SAW_reload2_new.wav"], [(0, "weapons/saw_reload2.wav")]),
     },
 }
+# (games, model) -> [(texture of the mesh to hide, its triangle count)]
+HIDE = {
+    (("valve", "bshift", "gearbox"), "v_shotgun.mdl"): [("SHELL.bmp", 84)],
+}
 SEQ_SIZE = 176   # mstudioseqdesc_t
 EVENT_SIZE = 76  # mstudioevent_t: frame, event, type, options[64]
 CL_EVENT_SOUND = 5004
@@ -53,6 +61,38 @@ def sound_events(data, numevents, index):
             opts = data[index + e * EVENT_SIZE + 12: index + (e + 1) * EVENT_SIZE].split(b"\0")[0].decode(errors="replace")
             out.append((frame, opts))
     return out
+
+
+def hide_meshes(data, meshes):
+    """Empty each mesh drawn with one of the given textures. Returns (data, hidden, problems)."""
+    data = bytearray(data)
+    numtex, texindex = struct.unpack_from("<2i", data, 180)
+    numskinref, _, skinindex = struct.unpack_from("<3i", data, 192)
+    textures = [data[texindex + 80 * i: texindex + 80 * i + 64].split(b"\0")[0].decode() for i in range(numtex)]
+    numbodyparts, bodypartindex = struct.unpack_from("<2i", data, 204)
+    hidden, problems = [], []
+    for texture, tris in meshes:
+        found = False
+        for b in range(numbodyparts):
+            nummodels, _, modelindex = struct.unpack_from("<3i", data, bodypartindex + 76 * b + 64)
+            for m in range(nummodels):
+                nummesh, meshindex = struct.unpack_from("<2i", data, modelindex + 112 * m + 72)
+                for k in range(nummesh):
+                    o = meshindex + 20 * k
+                    numtris, triindex, skinref = struct.unpack_from("<3i", data, o)
+                    tex = struct.unpack_from("<h", data, skinindex + 2 * skinref)[0] if skinref < numskinref else -1
+                    if not 0 <= tex < numtex or textures[tex] != texture:
+                        continue
+                    found = True
+                    if numtris == tris:
+                        struct.pack_into("<i", data, o, 0)
+                        struct.pack_into("<h", data, triindex, 0)  # end of the triangle commands
+                        hidden.append(texture)
+                    elif numtris != 0 or struct.unpack_from("<h", data, triindex)[0] != 0:
+                        problems.append(f"{texture} mesh has {numtris} triangles, expected {tris}")
+        if not found:
+            problems.append(f"no mesh with texture {texture}")
+    return bytes(data), hidden, problems
 
 
 def patch(data, rules):
@@ -83,7 +123,7 @@ def patch(data, rules):
     return bytes(data), changed, problems
 
 
-for (games, model), rules in RULES.items():
+def apply(games, model, fix, done_text, changed_text):
     for game in games:
         path = os.path.join(ROOT, game, "models", model)
         if not os.path.isfile(path):
@@ -92,15 +132,21 @@ for (games, model), rules in RULES.items():
         if data[:4] != b"IDST":
             print(f"{path}: not a studio model, skipped")
             continue
-        new, changed, problems = patch(data, rules)
+        new, changed, problems = fix(data)
         for problem in problems:
             print(f"{path}: {problem} - left alone")
         if not changed:
             if not problems:
-                print(f"{path}: sounds already in place")
+                print(f"{path}: {done_text}")
             continue
         if not os.path.exists(path + ".orig"):
             open(path + ".orig", "wb").write(data)
         open(path + ".new", "wb").write(new)
         os.replace(path + ".new", path)
-        print(f"{path}: sound events set for {', '.join(changed)} (original: {path}.orig)")
+        print(f"{path}: {changed_text} {', '.join(changed)} (original: {path}.orig)")
+
+
+for (games, model), rules in RULES.items():
+    apply(games, model, lambda data: patch(data, rules), "sounds already in place", "sound events set for")
+for (games, model), meshes in HIDE.items():
+    apply(games, model, lambda data: hide_meshes(data, meshes), "stray meshes already hidden", "hidden mesh")
