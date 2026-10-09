@@ -54,6 +54,10 @@ What it does (all steps can be skipped, see `--help`):
    Desert Eagle, sniper rifle and M249 reload sounds (the models asked for sound files that never shipped), and a
    loose shell that hung below the shotgun's grip between reloads.
 5. Links the Half-Life: VR mod's HD world textures, if that mod is installed.
+   With `--resrced DIR` (the unpacked [Half-Life: ReSrced](https://www.moddb.com/mods/half-life-resrced-hd-graphics-mod)
+   download, the folder that holds `STEP 4`) it also installs ReSrced's detail textures for Half-Life, Blue Shift and
+   Opposing Force and sets `r_detailtextures "1"` in each game's `opengl.cfg` (they only load when it is on at map
+   load; the video settings save it as 0).
 6. Installs the launcher `~/.local/bin/lambda1vr-pc` and `~/.local/bin/lambda1vr-relaunch` (see Debugging).
 7. Adds **Half-Life VR**, **Blue Shift VR** and **Opposing Force VR** to the Steam library, with artwork made from
    each game's own art and a VR tag. Steam has to be closed for this step; when it is running, the installer prints

@@ -21,6 +21,8 @@ usage: install-linux-steamvr.sh [options]
   --no-build          use the existing build output in --work
   --no-assets         skip the Lambda1VR VR models/sprites/sounds
   --no-textures       skip linking the Half-Life: VR mod's HD textures
+  --resrced DIR       the unpacked Half-Life: ReSrced download (folder with "STEP 4"): installs its detail
+                      textures for Half-Life, Blue Shift and Opposing Force and switches them on
   --no-shortcuts      skip the Steam library shortcuts and artwork
   --no-launcher       skip installing the launcher
   --skip-deps         do not check system packages
@@ -35,6 +37,7 @@ half_life=
 bin_dir=$HOME/.local/bin
 work=${XDG_CACHE_HOME:-$HOME/.cache}/lambda1vr-pc
 apk=
+resrced=
 build=1 assets=1 textures=1 shortcuts=1 launcher=1 deps=1
 build_args=()
 
@@ -46,6 +49,7 @@ while (($#)); do
 		--bin-dir) bin_dir=$2; shift 2 ;;
 		--work) work=$2; shift 2 ;;
 		--apk) apk=$2; shift 2 ;;
+		--resrced) resrced=$2; shift 2 ;;
 		--no-build) build=0; shift ;;
 		--no-assets) assets=0; shift ;;
 		--no-textures) textures=0; shift ;;
@@ -166,6 +170,29 @@ if [[ -f $root/valve/models/v_torch.mdl ]]; then
 fi
 log "weapon models: missing reload sounds, stray shotgun shell"
 python3 "$here/patch-weapon-models.py" "$root"
+
+# --- Detail textures from Half-Life: ReSrced (optional, --resrced) ------------------------------------------
+# Fine grain tiled over the world textures, visible up close. The engine loads them per map from
+# maps/<map>_detail.txt (images in valve/gfx/detail, which the expansions inherit) and only when r_detailtextures
+# is 1 at map load; the video config saves 0 by default, so it is switched on in each game's opengl.cfg.
+if [[ -n $resrced ]]; then
+	step4="$resrced/STEP 4"
+	[[ -d $step4/valve/gfx/detail ]] || die "--resrced: no 'STEP 4/valve/gfx/detail' in $resrced"
+	mkdir -p "$root/valve/gfx/detail"
+	cp "$step4"/valve/gfx/detail/*.tga "$root/valve/gfx/detail/"
+	for pair in valve:valve bshift:blueshift_unlocked gearbox:gearbox; do
+		dir=${pair%%:*} src=$step4/${pair#*:}/maps
+		[[ -d $root/$dir/maps && -d $src ]] || continue
+		cp "$src"/*_detail.txt "$root/$dir/maps/"
+		cfg=$root/$dir/opengl.cfg
+		if [[ -f $cfg ]] && grep -q '^r_detailtextures ' "$cfg"; then
+			sed -i 's/^r_detailtextures .*/r_detailtextures "1"/' "$cfg"
+		else
+			echo 'r_detailtextures "1"' >>"$cfg"
+		fi
+		log "ReSrced detail textures: $dir"
+	done
+fi
 
 # --- HD world textures from the free Half-Life: VR mod (Steam app 1908720) -----------------------------------
 if ((textures)); then
