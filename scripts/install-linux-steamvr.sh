@@ -196,7 +196,10 @@ fi
 
 # --- HD world textures from the free Half-Life: VR mod (Steam app 1908720) -----------------------------------
 if ((textures)); then
-	if hlvr=$(find_app_dir "Half-Life VR Mod") && [[ -d $hlvr/valve/textures/game ]]; then
+	if [[ -d $root/valve/materials/common && ! -L $root/valve/materials/common ]]; then
+		# a real folder = per-texture picks (one link per texture into several packs): leave it alone
+		log "HD textures: keeping the per-texture folder $root/valve/materials/common"
+	elif hlvr=$(find_app_dir "Half-Life VR Mod") && [[ -d $hlvr/valve/textures/game ]]; then
 		mkdir -p "$root/valve/materials"
 		ln -sfn "$hlvr/valve/textures/game" "$root/valve/materials/common"
 		log "HD textures linked from $hlvr"
