@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Add Lambda1VR-PC to the Steam library as non-Steam VR shortcuts ("Half-Life VR", "Blue Shift VR",
-"Opposing Force VR"), one per installed game folder, with badge artwork made from each game's own Steam art.
+"Opposing Force VR", "Counter-Strike VR" with cs16-client), one per installed game folder, with badge artwork made
+from each game's own Steam art.
 
 Steam must be closed: it rewrites shortcuts.vdf on exit. shortcuts.vdf is backed up next to itself first.
 Running it again updates the existing shortcuts instead of adding duplicates.
@@ -15,6 +16,7 @@ GAMES = [  # folder, shortcut name, launch options, Steam app whose art is used,
 	( 'valve', 'Half-Life VR', '', '70', 'ff8c00' ),
 	( 'bshift', 'Blue Shift VR', '-game bshift', '130', '3c8ce6' ),
 	( 'gearbox', 'Opposing Force VR', '-game gearbox', '50', '5ac83c' ),
+	( 'cstrike', 'Counter-Strike VR', '-game cstrike', '10', 'e6b43c' ),  # needs the cs16-client install
 ]
 
 
