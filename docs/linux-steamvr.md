@@ -2,7 +2,7 @@
 
 Play Half-Life, Blue Shift and Opposing Force in VR on Linux, natively (no Proton), with SteamVR as the OpenXR
 runtime. This is the Lambda1VR-PC port (Xash3D FWGS + OpenXR, game code from Team Beef's Lambda1VR) with fixes and
-tuning from playing all three games through on a PlayStation VR2 with Sense controllers.
+tuning from playing all three games through on Linux with a PlayStation VR2 and Sense controllers.
 
 - Engine: [`xash3d-fwgs`, branch `steamvr-linux`](https://github.com/marnovdm/xash3d-fwgs/tree/steamvr-linux)
   (menu: [`mainui_cpp`, branch `steamvr-linux`](https://github.com/marnovdm/mainui_cpp/tree/steamvr-linux))
@@ -17,8 +17,8 @@ and controllers that SteamVR supports should work, but they have not been tried.
 - x86_64 Linux, Steam and SteamVR, and a working VR headset.
 - **Half-Life** on Steam (app 70). Blue Shift and Opposing Force are picked up automatically when they are installed;
   they live in the same `Half-Life` folder.
-- Optional: the free **Half-Life: VR** mod on Steam (app 1908720). Only its HD world textures are used; the mod
-  itself does not have to run.
+- Optional, for HD textures: the free **Half-Life: VR** mod on Steam (app 1908720; only its textures are used, the
+  mod itself does not have to run) and the **Half-Life: ReSrced** download. See the README.
 - Build tools and 32-bit libraries. The game is a 32-bit x86 build, because SteamVR's Linux OpenXR runtime for 32-bit
   clients is what the Half-Life game code needs. On Arch (enable the `multilib` repository):
 
@@ -74,11 +74,15 @@ What it does (all steps can be skipped, see `--help`):
    too (`scripts/patch-weapon-models.py`, keeps `*.mdl.orig`): the revolver's reload sound and the Opposing Force
    Desert Eagle, sniper rifle and M249 reload sounds (the models asked for sound files that never shipped), and a
    loose shell that hung below the shotgun's grip between reloads.
-5. Links the Half-Life: VR mod's HD world textures, if that mod is installed.
-   With `--resrced DIR` (the unpacked [Half-Life: ReSrced](https://www.moddb.com/mods/half-life-resrced-hd-graphics-mod)
-   download, the folder that holds `STEP 4`) it also installs ReSrced's detail textures for Half-Life, Blue Shift and
-   Opposing Force and sets `r_detailtextures "1"` in each game's `opengl.cfg` (they only load when it is on at map
-   load; the video settings save it as 0).
+5. Installs the **HD texture mix** from [`textures/picks.tsv`](../textures/picks.tsv) (`scripts/install-textures.py`):
+   world textures from the Half-Life: VR mod (if installed in Steam) and Half-Life: ReSrced (with `--resrced DIR`),
+   ReSrced's model textures, and skies from ReSrced and BM SKYBOXES: Rework (downloaded, SHA-256 checked). See
+   [HD textures](../README.md#hd-textures-optional-recommended) for where to get the packs. The world and model
+   textures are links into the packs, in `<game>/materials/common` and `<game>/materials/models`; a folder you made
+   yourself there is left alone. With `--resrced DIR` (the unpacked
+   [Half-Life: ReSrced](https://www.moddb.com/mods/half-life-resrced-hd-graphics-mod) download, the folder that
+   holds `STEP 4`) it also installs ReSrced's detail textures for all three games and sets `r_detailtextures "1"` in
+   each game's `opengl.cfg` (they only load when it is on at map load; the video settings save it as 0).
 6. Installs the launcher `~/.local/bin/lambda1vr-pc` and `~/.local/bin/lambda1vr-relaunch` (see Debugging).
 7. Adds **Half-Life VR**, **Blue Shift VR** and **Opposing Force VR** to the Steam library, with artwork made from
    each game's own art and a VR tag. Steam has to be closed for this step; when it is running, the installer prints
@@ -248,44 +252,7 @@ engine in between). It refuses to quit when the save did not land.
 
 ## Changes from the upstream port
 
-ObeseCatLord's port was smoke-tested against a simulated Monado headset. Playing it on real hardware through
-SteamVR needed, among others:
-
-- **Runs on SteamVR**: OpenXR 1.0 instead of 1.1 (SteamVR rejects 1.1), full-resolution eye rendering straight into
-  the swapchains, correct culling at the outer edge of each eye, menu visible without a map loaded.
-- **Hand-mounted HUD**: health, suit and the flashlight battery on the flashlight handle (plus the damage-type icons), ammo on the gun hand
-  (`vr_hud_hands`); the flashlight model's orange logo and button are painted black by the installer so the panel
-  sits on a plain handle. Holding the gun with both hands, the health panel moves under the ammo panel.
-- **Weapon selection by pointing**: hold Triangle/Y for a weapon grid on the left arm, point with the gun hand,
-  release to switch (`vr_weapon_pointer`).
-- **Menus and HUD**: world-locked menu/console panel with a pointer ray and cursor, which also stays put while a map
-  loads; HUD panel size/position settings; no faint lines around HUD text; screen fades (death, damage) cover the
-  whole view instead of a box on the HUD; console messages hidden.
-- **Aiming and weapons**: correct weapon/hand/flashlight orientation, shots that go where the gun points (also
-  two-handed), stable aim when pointing steeply up, laser sight without lag, no stray muzzle flash when switching
-  weapons, sensible crowbar damage and throw strength.
-- **Movement**: no slowly building world tilt, head-relative analog movement with a walk modifier, ladders that
-  climb where you look, physical crouch relative to the recentre height.
-- **Controls**: weapon menu with a hold delay and dead zone, configurable up/down direction; off-hand
-  use on L3 with the laser sight on a double-click; jump/crouch on Cross/Circle; a menu chord that never toggles
-  the laser.
-- **Use**: using things with the left hand works (it was always dropped), and a hand pressed against a button can
-  use it.
-- **Desktop/window**: full speed and sound when the desktop window does not have focus; the SDL gamepad view of the
-  VR controllers no longer interferes.
-- **Sound**: effects slightly quieter than speech.
-- **Wall chargers** stop "charging" once you are full (`chargerfix`, set by the launcher).
-- **Mounted guns by hand**: use a mounted gun with your hand on its handles, aim it by swinging them
-  (`vr_tank_grab`); a button next to a gun (the tank cannon in *Surface Tension*) is no longer taken by the gun.
-- **Cinema mode**: scripted camera views play on a flat screen in the room instead of yanking your head around
-  (`vr_cinema`).
-- **VR settings in the menu**: Options → VR, four pages, usable with the pointer.
-- **Gluon gun**: one beam, from the gun (it drew a second one from your head).
-- **Upstream fixes**: crash, prediction and rendering fixes from Xash3D FWGS and hlsdk-portable, cherry-picked
-  (`git log --grep "cherry picked"` in the engine and game-code repositories).
-- **Weapon models**: reload sounds for the revolver and the Opposing Force Desert Eagle, sniper rifle and M249; no
-  loose shell under the shotgun.
-- Fixed crashes (laser sight, `impulse 101`) and missing hands/flashlight models.
+See [What this fork adds](../README.md#what-this-fork-adds) in the README.
 
 ## Known issues
 
@@ -314,6 +281,10 @@ SteamVR needed, among others:
 - [Team Beef](https://github.com/Team-Beef-Studios/Lambda1VR): Lambda1VR, the Quest port this is based on, and its
   VR models (downloaded from their release; non-commercial use, readme kept next to them).
 - [ObeseCatLord](https://github.com/ObeseCatLord/Lambda1VR-PC): the PC OpenXR port of Lambda1VR this fork builds on.
+- HD textures: the [Half-Life: VR](https://store.steampowered.com/app/1908720/) mod team, Leaufai
+  ([Half-Life: ReSrced](https://www.moddb.com/mods/half-life-resrced-hd-graphics-mod)) and Gondon Kefirman
+  ([BM SKYBOXES: Rework](https://gamebanana.com/mods/587803), after Crowbar Collective's Black Mesa). Their files are
+  downloaded or linked from your own copies, never redistributed here.
 - [Xash3D FWGS](https://github.com/FWGS/xash3d-fwgs) and [hlsdk-portable](https://github.com/FWGS/hlsdk-portable).
 - The engine and game code keep their upstream licences (Xash3D FWGS; the Half-Life SDK licence from Valve for the
   game code). This repository's scripts and docs: MIT. Half-Life itself and its content are not included: you need your own copy on Steam.

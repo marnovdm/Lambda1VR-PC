@@ -3,8 +3,7 @@
 Play **Half-Life, Blue Shift and Opposing Force in VR on Linux**, natively (no Proton), with SteamVR. This is a
 fork of [ObeseCatLord's Lambda1VR-PC](https://github.com/ObeseCatLord/Lambda1VR-PC) (the PC OpenXR port of Team
 Beef's [Lambda1VR](https://github.com/Team-Beef-Studios/Lambda1VR)), with the fixes and additions that came out of
-playing all three games through on a PlayStation VR2: hand-mounted HUD, point-and-release weapon selection, VR
-settings in the menu, mounted guns by hand, cinema mode for scripted cameras and more.
+playing all three games through on Linux with a PlayStation VR2 (Sense controllers, Sony's PC adapter).
 
 ## Install
 
@@ -17,8 +16,76 @@ cd Lambda1VR-PC
 ```
 
 The installer builds the engine and game code from source, copies the game data from your Steam installation
-(Steam's own copy is left untouched), downloads the Lambda1VR VR models and adds the games to your Steam library.
+(Steam's own copy is left untouched), downloads the Lambda1VR VR models, installs the HD textures (below) and adds
+the games to your Steam library. Re-run it to update; it keeps your settings and saves.
 **Build dependencies, controls, settings and troubleshooting: [`docs/linux-steamvr.md`](docs/linux-steamvr.md).**
+
+### HD textures (optional, recommended)
+
+The installer sets up a hand-picked mix of high-resolution textures, chosen texture by texture while playing
+through ([`textures/picks.tsv`](textures/picks.tsv)): for each wall, sign and floor the better of two AI-upscaled
+packs, ReSrced's model textures, and remastered skies. It uses whichever packs are there:
+
+| Pack | Gives | How to get it |
+|---|---|---|
+| [Half-Life: VR](https://store.steampowered.com/app/1908720/) mod (free on Steam) | world textures (small ones and large wall panels) | Install it in Steam; the installer finds it. The mod itself does not have to run |
+| [Half-Life: ReSrced](https://www.moddb.com/mods/half-life-resrced-hd-graphics-mod) (Leaufai) | world textures (text, signs, floors), model textures, skies, fine detail textures | Download and unpack it, then `./scripts/install-linux-steamvr.sh --resrced "/path/to/Half-Life ReSrced download (v1)"` (the folder that holds `STEP 4`) |
+| [BM SKYBOXES: Rework](https://gamebanana.com/mods/587803) (Gondon Kefirman, after Black Mesa) | Black Mesa-style skies for Xen and the cliffs | Downloaded by the installer (42 MB, checksum verified); `--no-bm-skies` skips it |
+
+With only one of the texture packs, its textures stand in for the other's; textures no installed pack has keep
+the original look. `--no-textures` installs none of it. Nothing is copied into the packs' own folders, and Steam's
+Half-Life is not changed.
+
+## What this fork adds
+
+On top of ObeseCatLord's port (which was smoke-tested against a simulated headset):
+
+**Runs on real hardware with SteamVR**
+- OpenXR 1.0 (SteamVR rejects 1.1), full-resolution eye images rendered straight into the swapchains, correct
+  culling at the outer edge of each eye, menu visible before a map is loaded.
+- Full speed and sound when the desktop window does not have focus; the SDL gamepad view of the VR controllers no
+  longer interferes.
+
+**HUD and menus**
+- Hand-mounted HUD: health, suit, flashlight battery and damage icons on the flashlight handle, ammo on the gun
+  hand; with both hands on the gun the health panel moves under the ammo panel.
+- World-locked menu and console panel with a laser pointer, which stays put while a map loads.
+- **VR settings in the game menu** (Options → VR, four pages) for nearly every setting below.
+- **Cinema mode**: scripted camera views play on a screen in the room instead of moving your whole view.
+- Sharp HUD text (no faint lines around it), screen fades that cover the whole view, console spam hidden.
+
+**Weapons and interaction**
+- **Weapon selection by pointing**: hold Triangle/Y for a weapon grid on your left arm, point with the gun, let go.
+- Shots go where the gun points, also two-handed; stable aim when pointing steeply up; laser sight without lag.
+- **Mounted guns by hand**: take a mounted gun by its handles and swing it to aim; buttons next to a gun keep working.
+- Using things with the left hand works (it was always dropped), a hand pressed against a button uses it.
+- Crowbar damage from swing speed, grenade throws from arm speed, the crowbar from behind your shoulder.
+- Gluon gun draws one beam from the gun (it drew a second one from your head); no stray muzzle flash on weapon
+  switch; wall chargers stop "charging" once you are full.
+
+**Comfort and movement**
+- Smooth turning, head-relative analog movement with a walk modifier, no slowly building world tilt.
+- Ladders climb where you look; optional physical crouch relative to your recentred height.
+- Jump/crouch on Cross/Circle (A/B), use on the stick clicks, a menu chord that never toggles the laser.
+- Sound effects slightly quieter than speech.
+
+**Looks and models**
+- The HD texture mix above (the engine loads PNG and DDS replacements as well as TGA).
+- Model fixes, applied by the installer: reload sounds for the revolver and the Opposing Force Desert Eagle,
+  sniper rifle and M249 (the models asked for sound files that never shipped), no loose shell under the shotgun,
+  the flashlight's logo painted over so the HUD sits on a plain handle.
+
+**Installer and tools**
+- One-command install and update with readable output; Steam library entries for all three games with artwork.
+- `lambda1vr-relaunch`: quicksave, restart and continue (e.g. after changing a setting that needs a restart),
+  and a console FIFO to send commands to the running game from a terminal.
+- [`fakexr`](https://github.com/marnovdm/xash3d-fwgs/tree/steamvr-linux/utils/fakexr): a fake OpenXR runtime to
+  test the VR path without a headset (scripted poses and buttons, screenshots of everything the headset would show).
+
+**Fixes**
+- Crashes with the laser sight and `impulse 101`; missing hand and flashlight models.
+- Crash, prediction and rendering fixes from Xash3D FWGS and hlsdk-portable, cherry-picked onto the port
+  (`git log --grep "cherry picked"` in the engine and game-code repositories).
 
 Source of the engine and game code (`steamvr-linux*` branches):
 [`xash3d-fwgs`](https://github.com/marnovdm/xash3d-fwgs/tree/steamvr-linux),

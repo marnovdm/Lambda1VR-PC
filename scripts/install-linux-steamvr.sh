@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # One-shot installer for Lambda1VR-PC on Linux with SteamVR: builds the engine and game code, stages a game tree
 # from your Steam copy of Half-Life (plus Blue Shift / Opposing Force when installed), adds the Lambda1VR VR
-# models, optionally the Half-Life: VR mod's HD textures, the `lambda1vr-pc` launcher and Steam library shortcuts.
+# models, the HD texture mix (textures/picks.tsv), the `lambda1vr-pc` launcher and Steam library shortcuts.
 #
 # Re-running it updates the build and keeps your configs, saves and installed assets. See docs/linux-steamvr.md.
 set -euo pipefail
@@ -20,9 +20,10 @@ usage: install-linux-steamvr.sh [options]
   --apk FILE          local copy of lambda1vr-v1.6.2.apk (default: download it)
   --no-build          use the existing build output in --work
   --no-assets         skip the Lambda1VR VR models/sprites/sounds
-  --no-textures       skip linking the Half-Life: VR mod's HD textures
-  --resrced DIR       the unpacked Half-Life: ReSrced download (folder with "STEP 4"): installs its detail
-                      textures for Half-Life, Blue Shift and Opposing Force and switches them on
+  --no-textures       no HD textures or skies (original look)
+  --resrced DIR       the unpacked Half-Life: ReSrced download (folder with "STEP 4"): its world/model textures
+                      and skies join the HD mix, and its detail textures are installed and switched on
+  --no-bm-skies       do not download the BM SKYBOXES: Rework skies (42 MB)
   --no-shortcuts      skip the Steam library shortcuts and artwork
   --no-launcher       skip installing the launcher
   --skip-deps         do not check system packages
@@ -38,7 +39,7 @@ bin_dir=$HOME/.local/bin
 work=${XDG_CACHE_HOME:-$HOME/.cache}/lambda1vr-pc
 apk=
 resrced=
-build=1 assets=1 textures=1 shortcuts=1 launcher=1 deps=1
+build=1 assets=1 textures=1 bmskies=1 shortcuts=1 launcher=1 deps=1
 build_args=()
 
 while (($#)); do
@@ -53,6 +54,7 @@ while (($#)); do
 		--no-build) build=0; shift ;;
 		--no-assets) assets=0; shift ;;
 		--no-textures) textures=0; shift ;;
+		--no-bm-skies) bmskies=0; shift ;;
 		--no-shortcuts) shortcuts=0; shift ;;
 		--no-launcher) launcher=0; shift ;;
 		--skip-deps) deps=0; shift ;;
@@ -198,18 +200,38 @@ if [[ -n $resrced ]]; then
 	done
 fi
 
-# --- HD world textures from the free Half-Life: VR mod (Steam app 1908720) -----------------------------------
+# --- HD textures: the curated mix of textures/picks.tsv --------------------------------------------------------
+# World textures from the free Half-Life: VR mod (Steam app 1908720) and ReSrced (--resrced), model textures from
+# ReSrced, skies from ReSrced and BM SKYBOXES: Rework (downloaded here). Each pick falls back to another pack when
+# its own is missing; see scripts/install-textures.py.
 if ((textures)); then
-	if [[ -d $root/valve/materials/common && ! -L $root/valve/materials/common ]]; then
-		# a real folder = per-texture picks (one link per texture into several packs): leave it alone
-		log "HD textures: keeping the per-texture folder $root/valve/materials/common"
-	elif hlvr=$(find_app_dir "Half-Life VR Mod") && [[ -d $hlvr/valve/textures/game ]]; then
-		mkdir -p "$root/valve/materials"
-		ln -sfn "$hlvr/valve/textures/game" "$root/valve/materials/common"
-		log "HD textures linked from $hlvr"
+	tex_args=(--root "$root")
+	if hlvr=$(find_app_dir "Half-Life VR Mod") && [[ -d $hlvr/valve/textures/game ]]; then
+		tex_args+=(--hlvr "$hlvr/valve/textures/game")
 	else
-		warn "Half-Life: VR mod not installed - no HD world textures (optional: install it in Steam, re-run)"
+		warn "Half-Life: VR mod not installed - fewer HD world textures (optional: install it in Steam, free, then re-run)"
 	fi
+	[[ -n $resrced ]] && tex_args+=(--resrced "$resrced")
+	if ((bmskies)); then
+		bm_zip=$work/downloads/bm_skyboxes.zip bm_dir=$work/bm-skyboxes
+		bm_sha256=b517574abe9c5ee0d8192b97e2e31de56899f2613d5ff6e193fee706f9c2d8ad
+		if [[ ! -d "$bm_dir/BM Skyboxes" ]]; then
+			log "downloading the BM SKYBOXES: Rework skies (42 MB, SHA-256 checked)"
+			mkdir -p "$work/downloads"
+			if curl -fL --retry 3 --progress-bar -o "$bm_zip.part" https://gamebanana.com/dl/1419394 &&
+				[[ $(sha256sum "$bm_zip.part" | cut -d' ' -f1) == "$bm_sha256" ]]; then
+				mv -f "$bm_zip.part" "$bm_zip"
+				rm -rf "$bm_dir.new" && mkdir -p "$bm_dir.new" && unzip -q "$bm_zip" -d "$bm_dir.new" &&
+					rm -rf "$bm_dir" && mv "$bm_dir.new" "$bm_dir"
+			else
+				rm -f "$bm_zip.part"
+				warn "BM skies download failed or changed (checksum) - skipped; re-run later or use --no-bm-skies"
+			fi
+		fi
+		[[ -d "$bm_dir/BM Skyboxes" ]] && tex_args+=(--bmskies "$bm_dir/BM Skyboxes")
+	fi
+	log "HD textures"
+	python3 "$here/install-textures.py" "${tex_args[@]}"
 fi
 
 # --- launcher -------------------------------------------------------------------------------------------------
