@@ -15,10 +15,23 @@ cd Lambda1VR-PC
 ./scripts/install-linux-steamvr.sh
 ```
 
-The installer builds the engine and game code from source, copies the game data from your Steam installation
-(Steam's own copy is left untouched), downloads the Lambda1VR VR models, installs the HD textures (below) and adds
-the games to your Steam library. Re-run it to update; it keeps your settings and saves.
+Re-run it to update; it keeps your settings and saves.
 **Build dependencies, controls, settings and troubleshooting: [`docs/linux-steamvr.md`](docs/linux-steamvr.md).**
+
+What the installer does and where everything comes from:
+
+- **Engine and game code:** cloned from the `steamvr-linux*` branches below and built on your machine (32-bit),
+  together with Khronos' OpenXR loader.
+- **Game data:** copied from your own Steam installation of Half-Life (and Blue Shift / Opposing Force when you
+  have them) into `~/Games/lambda1vr-pc`. Steam's copy is not changed.
+- **VR weapon models, hands, sprites and sounds:** Lambda1VR is a Quest game, so these only exist inside its Android
+  app. The installer downloads the official Lambda1VR v1.6.2 APK from
+  [Team Beef's GitHub release](https://github.com/Team-Beef-Studios/Lambda1VR/releases/tag/v1.6.2), checks its
+  SHA-256 and unpacks just these files from it (`--apk FILE` uses a copy you already have). They are for private,
+  non-commercial use; their readme is copied next to them. A few of these models are then fixed (see below).
+- **HD textures:** from the packs below, linked into the game folder (skies are copied); none of them are part of
+  this repository.
+- **Steam library entries** for each game, with artwork made from the game's own.
 
 ### HD textures (optional, recommended)
 
@@ -96,7 +109,8 @@ Source of the engine and game code (`steamvr-linux*` branches):
 ## Upstream packaging and test tools
 
 The rest of this README is ObeseCatLord's documentation of the upstream packaging and test tools (Sven Co-op,
-smoke tests). They are kept as they are and are not part of the Linux + SteamVR installer.
+smoke tests). They are kept as they are and are not part of the Linux + SteamVR installer, except
+`scripts/install-lambda-assets.sh` (the APK download described next), which the installer uses for the VR models.
 
 This repository contains desktop packaging glue for the Linux/Windows OpenXR
 port. It intentionally does not redistribute Half-Life data or Lambda1VR's
