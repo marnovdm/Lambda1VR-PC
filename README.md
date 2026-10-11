@@ -66,7 +66,8 @@ On top of ObeseCatLord's port (which was smoke-tested against a simulated headse
 **Comfort and movement**
 - Smooth turning, head-relative analog movement with a walk modifier, no slowly building world tilt.
 - Ladders climb where you look; optional physical crouch relative to your recentred height.
-- Jump/crouch on Cross/Circle (A/B), use on the stick clicks, a menu chord that never toggles the laser.
+- Jump and crouch on Cross/Circle (A/B), use on either stick click, both stick clicks together open the menu
+  (and leave the laser sight alone, which a left stick double-click switches).
 - Sound effects slightly quieter than speech.
 
 **Looks and models**
