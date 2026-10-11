@@ -87,6 +87,10 @@ What it does (all steps can be skipped, see `--help`):
    each game's own art and a VR tag. Steam has to be closed for this step; when it is running, the installer prints
    the command to run later (`scripts/steam-shortcuts.py`).
 
+The installer tells you what it skipped (games you do not own, texture packs it did not find, Steam library entries
+while Steam was running) both when it happens and in a list at the end, with how to add each. Steam may stay open
+during the install; only the library entries need it closed. Flatpak Steam is found but not tested.
+
 **Update:** pull this repository and run the installer again. It fetches and rebuilds the engine and game code and
 never overwrites your settings, saves or installed assets (apart from the model fixes above).
 

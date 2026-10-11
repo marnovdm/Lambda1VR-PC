@@ -13,7 +13,7 @@ usage() {
 usage: install-linux-steamvr.sh [options]
 
   --root DIR          game tree to create/update (default: ~/Games/lambda1vr-pc)
-  --steam DIR         Steam folder (default: ~/.local/share/Steam)
+  --steam DIR         Steam folder (default: ~/.local/share/Steam, or Flatpak Steam's)
   --half-life DIR     Half-Life install with valve/ (default: found in your Steam libraries)
   --bin-dir DIR       where the lambda1vr-pc launcher goes (default: ~/.local/bin)
   --work DIR          build tree (default: ~/.cache/lambda1vr-pc)
@@ -33,7 +33,7 @@ EOF
 }
 
 root=$HOME/Games/lambda1vr-pc
-steam=$HOME/.local/share/Steam
+steam=
 half_life=
 bin_dir=$HOME/.local/bin
 work=${XDG_CACHE_HOME:-$HOME/.cache}/lambda1vr-pc
@@ -68,6 +68,9 @@ done
 log() { printf '\033[1m==> %s\033[0m\n' "$*"; }
 warn() { printf '\033[1;33mwarning:\033[0m %s\n' "$*" >&2; }
 die() { printf '\033[1;31merror:\033[0m %s\n' "$*" >&2; exit 1; }
+# missing optional extras: shown when they are found missing and again in the summary at the end
+skipped=()
+optional() { warn "$1"; skipped+=("$1"); }
 
 [[ $(uname -m) == x86_64 ]] || die "x86_64 Linux only (the game is a 32-bit x86 build)"
 
@@ -91,7 +94,17 @@ if ((deps)); then
 fi
 
 # --- find Steam libraries and Half-Life -------------------------------------------------------------------
-[[ -d $steam/steamapps ]] || die "no Steam folder at $steam (use --steam)"
+if [[ -z $steam ]]; then
+	for steam in "$HOME/.local/share/Steam" "$HOME/.steam/steam" "$HOME/.var/app/com.valvesoftware.Steam/.local/share/Steam"; do
+		[[ -d $steam/steamapps ]] && break
+	done
+fi
+[[ -d $steam/steamapps ]] || die "no Steam folder found (looked in ~/.local/share/Steam, ~/.steam/steam and Flatpak's); pass --steam DIR"
+steam=$(realpath "$steam")
+[[ $steam == */.var/app/* ]] && warn "Flatpak Steam: not tested with this installer; SteamVR and the game may not find each other"
+if pgrep -x steam >/dev/null && ((shortcuts)); then
+	warn "Steam is running: everything installs, but the Steam library entries are only added when Steam is closed. Close it now (Steam menu > Exit), or add them later with the command shown at the end."
+fi
 steam_libraries() {
 	echo "$steam"
 	sed -n 's/^\s*"path"\s*"\(.*\)"\s*$/\1/p' "$steam/steamapps/libraryfolders.vdf" 2>/dev/null
@@ -108,10 +121,14 @@ if [[ -z $half_life ]]; then
 fi
 [[ -d $half_life/valve ]] || die "$half_life/valve does not exist"
 games=(valve)
-for game in bshift gearbox; do
-	[[ -f $half_life/$game/liblist.gam ]] && games+=("$game")
-done
 declare -A game_names=([valve]="Half-Life" [bshift]="Blue Shift" [gearbox]="Opposing Force")
+for game in bshift gearbox; do
+	if [[ -f $half_life/$game/liblist.gam ]]; then
+		games+=("$game")
+	else
+		optional "${game_names[$game]} is not installed in Steam - only played when you own it (install it, then re-run)"
+	fi
+done
 game_list=$(for game in "${games[@]}"; do printf '%s, ' "${game_names[$game]}"; done)
 game_list=${game_list%, }
 log "found $game_list in $half_life"
@@ -218,9 +235,13 @@ if ((textures)); then
 	if hlvr=$(find_app_dir "Half-Life VR Mod") && [[ -d $hlvr/valve/textures/game ]]; then
 		tex_args+=(--hlvr "$hlvr/valve/textures/game")
 	else
-		warn "Half-Life: VR mod not installed - fewer HD world textures (optional: install it in Steam, free, then re-run)"
+		optional "Half-Life: VR mod not installed - fewer HD world textures (free in Steam, app 1908720; install it, then re-run)"
 	fi
-	[[ -n $step4 ]] && tex_args+=(--resrced "$step4")
+	if [[ -n $step4 ]]; then
+		tex_args+=(--resrced "$step4")
+	else
+		optional "Half-Life: ReSrced not given - fewer HD textures, no HD model textures or detail textures (download it from ModDB, unpack, re-run with --resrced DIR; see README)"
+	fi
 	if ((bmskies)); then
 		bm_zip=$work/downloads/bm_skyboxes.zip bm_dir=$work/bm-skyboxes
 		bm_sha256=b517574abe9c5ee0d8192b97e2e31de56899f2613d5ff6e193fee706f9c2d8ad
@@ -234,7 +255,7 @@ if ((textures)); then
 					rm -rf "$bm_dir" && mv "$bm_dir.new" "$bm_dir"
 			else
 				rm -f "$bm_zip.part"
-				warn "BM skies download failed or changed (checksum) - skipped; re-run later or use --no-bm-skies"
+				optional "BM skies download failed or the file changed (checksum) - original skies kept; re-run later"
 			fi
 		fi
 		[[ -d "$bm_dir/BM Skyboxes" ]] && tex_args+=(--bmskies "$bm_dir/BM Skyboxes")
@@ -261,8 +282,9 @@ shortcuts_added=0
 if ((shortcuts && launcher)); then
 	shortcut_cmd=("$here/steam-shortcuts.py" --root "$root" --launcher "$bin_dir/lambda1vr-pc" --steam "$steam")
 	if pgrep -x steam >/dev/null; then
-		warn "Steam is running, so the library shortcuts were not added. Close Steam completely, then run:"
-		printf '    %q' "${shortcut_cmd[@]}" >&2; printf '\n' >&2
+		shortcut_line=$(printf '%q ' "${shortcut_cmd[@]}")
+		optional "Steam was running, so the library entries were not added. Close Steam completely, then run:
+    $shortcut_line"
 	else
 		log "adding Steam library shortcuts"
 		"${shortcut_cmd[@]}"
@@ -284,4 +306,8 @@ else
 	printf 'run %s/xash3d from %s.\n' "$root" "$root"
 fi
 printf 'Set the SteamVR per-application resolution for the game to about 300%%. Guide: docs/linux-steamvr.md\n'
+if ((${#skipped[@]})); then
+	printf '\n\033[1;33mSkipped (optional, see above):\033[0m\n'
+	printf -- '- %s\n' "${skipped[@]}"
+fi
 
