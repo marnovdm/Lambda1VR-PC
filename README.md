@@ -58,7 +58,7 @@ On top of ObeseCatLord's port (which was smoke-tested against a simulated headse
 - **Weapon selection by pointing**: hold Triangle/Y for a weapon grid on your left arm, point with the gun, let go.
 - Shots go where the gun points, also two-handed; stable aim when pointing steeply up; laser sight without lag.
 - **Mounted guns by hand**: take a mounted gun by its handles and swing it to aim; buttons next to a gun keep working.
-- Using things with the left hand works (it was always dropped), a hand pressed against a button uses it.
+- Using things with the left hand works (it was always dropped).
 - Crowbar damage from swing speed, grenade throws from arm speed, the crowbar from behind your shoulder.
 - Gluon gun draws one beam from the gun (it drew a second one from your head); no stray muzzle flash on weapon
   switch; wall chargers stop "charging" once you are full.

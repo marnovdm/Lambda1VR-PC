@@ -256,7 +256,8 @@ See [What this fork adds](../README.md#what-this-fork-adds) in the README.
 
 ## Known issues
 
-- The **reach gesture** (stretch your arm out to use something) does not trigger; use the stick clicks.
+- The **reach gesture** (stretch your arm out to use something) does not trigger, and touching a button with your
+  hand does not press it; use the stick clicks.
 - The controller **menu button** (Sense Options) does not open the menu: SteamVR's generated Touch binding and
   Sony's Touch emulation use different paths for it. Both stick clicks together always open the menu.
 - Haptics in gameplay are unconfirmed (`vr_testhaptic` works).
