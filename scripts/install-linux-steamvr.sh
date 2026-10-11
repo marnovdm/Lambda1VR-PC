@@ -21,8 +21,8 @@ usage: install-linux-steamvr.sh [options]
   --no-build          use the existing build output in --work
   --no-assets         skip the Lambda1VR VR models/sprites/sounds
   --no-textures       no HD textures or skies (original look)
-  --resrced DIR       the unpacked Half-Life: ReSrced download (folder with "STEP 4"): its world/model textures
-                      and skies join the HD mix, and its detail textures are installed and switched on
+  --resrced DIR       where you unpacked the Half-Life: ReSrced download: its world/model textures and skies
+                      join the HD mix, and its detail textures are installed and switched on
   --no-bm-skies       do not download the BM SKYBOXES: Rework skies (42 MB)
   --no-shortcuts      skip the Steam library shortcuts and artwork
   --no-launcher       skip installing the launcher
@@ -116,6 +116,17 @@ game_list=$(for game in "${games[@]}"; do printf '%s, ' "${game_names[$game]}"; 
 game_list=${game_list%, }
 log "found $game_list in $half_life"
 
+# --- Half-Life: ReSrced (--resrced): find its "STEP 4" folder (named after a step of ReSrced's own install guide;
+# it holds the game folders). Accepts the unpack folder, the "Half-Life ReSrced download (v1)" folder or STEP 4 itself.
+step4=
+if [[ -n $resrced ]]; then
+	for candidate in "$resrced" "$resrced/STEP 4" "$resrced"/*/"STEP 4"; do
+		[[ -d $candidate/valve/materials/common ]] && { step4=$(realpath "$candidate"); break; }
+	done
+	[[ -n $step4 ]] || die "--resrced: $resrced does not look like the unpacked Half-Life: ReSrced download"
+	log "Half-Life: ReSrced: $step4"
+fi
+
 # --- build --------------------------------------------------------------------------------------------------
 if ((build)); then
 	"$here/build-linux-steamvr.sh" --work "$work" "${build_args[@]}"
@@ -182,8 +193,6 @@ python3 "$here/patch-weapon-models.py" "$root"
 # maps/<map>_detail.txt (images in valve/gfx/detail, which the expansions inherit) and only when r_detailtextures
 # is 1 at map load; the video config saves 0 by default, so it is switched on in each game's opengl.cfg.
 if [[ -n $resrced ]]; then
-	step4="$resrced/STEP 4"
-	[[ -d $step4/valve/gfx/detail ]] || die "--resrced: no 'STEP 4/valve/gfx/detail' in $resrced"
 	mkdir -p "$root/valve/gfx/detail"
 	cp "$step4"/valve/gfx/detail/*.tga "$root/valve/gfx/detail/"
 	for pair in valve:valve bshift:blueshift_unlocked gearbox:gearbox; do
@@ -211,7 +220,7 @@ if ((textures)); then
 	else
 		warn "Half-Life: VR mod not installed - fewer HD world textures (optional: install it in Steam, free, then re-run)"
 	fi
-	[[ -n $resrced ]] && tex_args+=(--resrced "$resrced")
+	[[ -n $step4 ]] && tex_args+=(--resrced "$step4")
 	if ((bmskies)); then
 		bm_zip=$work/downloads/bm_skyboxes.zip bm_dir=$work/bm-skyboxes
 		bm_sha256=b517574abe9c5ee0d8192b97e2e31de56899f2613d5ff6e193fee706f9c2d8ad

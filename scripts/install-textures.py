@@ -4,7 +4,7 @@
 usage: install-textures.py --root DIR [--hlvr DIR] [--resrced DIR] [--bmskies DIR] [--picks FILE] [--force] [--dry-run]
 
   --hlvr DIR     Half-Life: VR mod textures: <mod>/valve/textures/game (Steam app 1908720)
-  --resrced DIR  Half-Life: ReSrced, the folder holding "STEP 4" (or STEP 4 itself)
+  --resrced DIR  Half-Life: ReSrced: its "STEP 4" folder (the one holding valve/, gearbox/, ...), or the folder above it
   --bmskies DIR  BM SKYBOXES: Rework, the unpacked "BM Skyboxes" folder
 
 The pick list names, per game, which pack each world texture, model texture set and sky comes from. A pick whose
@@ -41,7 +41,7 @@ if args.hlvr and os.path.isdir(args.hlvr):
 if args.resrced:
     step4 = args.resrced if os.path.basename(args.resrced.rstrip('/')) == 'STEP 4' else os.path.join(args.resrced, 'STEP 4')
     if not os.path.isdir(os.path.join(step4, 'valve')):
-        sys.exit(f'--resrced: no "STEP 4/valve" in {args.resrced}')
+        sys.exit(f'--resrced: {args.resrced} does not look like the unpacked Half-Life: ReSrced download')
     packs['resrced'] = os.path.abspath(step4)
 if args.bmskies and os.path.isdir(args.bmskies):
     packs['bmskies'] = os.path.abspath(args.bmskies)

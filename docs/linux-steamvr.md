@@ -79,9 +79,8 @@ What it does (all steps can be skipped, see `--help`):
    ReSrced's model textures, and skies from ReSrced and BM SKYBOXES: Rework (downloaded, SHA-256 checked). See
    [HD textures](../README.md#hd-textures-optional-recommended) for where to get the packs. The world and model
    textures are links into the packs, in `<game>/materials/common` and `<game>/materials/models`; a folder you made
-   yourself there is left alone. With `--resrced DIR` (the unpacked
-   [Half-Life: ReSrced](https://www.moddb.com/mods/half-life-resrced-hd-graphics-mod) download, the folder that
-   holds `STEP 4`) it also installs ReSrced's detail textures for all three games and sets `r_detailtextures "1"` in
+   yourself there is left alone. With `--resrced DIR` (where you unpacked the
+   [Half-Life: ReSrced](https://www.moddb.com/mods/half-life-resrced-hd-graphics-mod) download) it also installs ReSrced's detail textures for all three games and sets `r_detailtextures "1"` in
    each game's `opengl.cfg` (they only load when it is on at map load; the video settings save it as 0).
 6. Installs the launcher `~/.local/bin/lambda1vr-pc` and `~/.local/bin/lambda1vr-relaunch` (see Debugging).
 7. Adds **Half-Life VR**, **Blue Shift VR** and **Opposing Force VR** to the Steam library, with artwork made from

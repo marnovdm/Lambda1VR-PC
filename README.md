@@ -29,7 +29,7 @@ packs, ReSrced's model textures, and remastered skies. It uses whichever packs a
 | Pack | Gives | How to get it |
 |---|---|---|
 | [Half-Life: VR](https://store.steampowered.com/app/1908720/) mod (free on Steam) | world textures (small ones and large wall panels) | Install it in Steam; the installer finds it. The mod itself does not have to run |
-| [Half-Life: ReSrced](https://www.moddb.com/mods/half-life-resrced-hd-graphics-mod) (Leaufai) | world textures (text, signs, floors), model textures, skies, fine detail textures | Download and unpack it, then `./scripts/install-linux-steamvr.sh --resrced "/path/to/Half-Life ReSrced download (v1)"` (the folder that holds `STEP 4`) |
+| [Half-Life: ReSrced](https://www.moddb.com/mods/half-life-resrced-hd-graphics-mod) (Leaufai) | world textures (text, signs, floors), model textures, skies, fine detail textures | Download it, unpack it anywhere, and run the installer with `--resrced /path/to/where/you/unpacked/it` |
 | [BM SKYBOXES: Rework](https://gamebanana.com/mods/587803) (Gondon Kefirman, after Black Mesa) | Black Mesa-style skies for Xen and the cliffs | Downloaded by the installer (42 MB, checksum verified); `--no-bm-skies` skips it |
 
 With only one of the texture packs, its textures stand in for the other's; textures no installed pack has keep
