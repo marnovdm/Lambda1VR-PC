@@ -79,11 +79,12 @@ if ((deps)); then
 		if [[ -n $missing ]]; then
 			die "missing packages (multilib repository needed): sudo pacman -S --needed $(echo $missing)"
 		fi
+		log "system packages: all there"
 	else
 		for tool in git gcc g++ cmake make python3 pkg-config rsync curl unzip sha256sum; do
 			command -v "$tool" >/dev/null || die "missing command: $tool"
 		done
-		warn "not Arch: make sure the 32-bit (i386) development libraries listed in docs/linux-steamvr.md are installed"
+		warn "not Arch: only the build commands were checked; install the 32-bit (i386) development libraries listed in docs/linux-steamvr.md first"
 	fi
 fi
 
@@ -108,7 +109,10 @@ games=(valve)
 for game in bshift gearbox; do
 	[[ -f $half_life/$game/liblist.gam ]] && games+=("$game")
 done
-log "Half-Life: $half_life (games: ${games[*]})"
+declare -A game_names=([valve]="Half-Life" [bshift]="Blue Shift" [gearbox]="Opposing Force")
+game_list=$(for game in "${games[@]}"; do printf '%s, ' "${game_names[$game]}"; done)
+game_list=${game_list%, }
+log "found $game_list in $half_life"
 
 # --- build --------------------------------------------------------------------------------------------------
 if ((build)); then
@@ -222,14 +226,31 @@ if ((launcher)); then
 fi
 
 # --- Steam library shortcuts ---------------------------------------------------------------------------------
+shortcuts_added=0
 if ((shortcuts && launcher)); then
 	shortcut_cmd=("$here/steam-shortcuts.py" --root "$root" --launcher "$bin_dir/lambda1vr-pc" --steam "$steam")
 	if pgrep -x steam >/dev/null; then
-		warn "Steam is running: close it and run  ${shortcut_cmd[*]}  to add the library shortcuts"
+		warn "Steam is running, so the library shortcuts were not added. Close Steam completely, then run:"
+		printf '    %q' "${shortcut_cmd[@]}" >&2; printf '\n' >&2
 	else
 		log "adding Steam library shortcuts"
 		"${shortcut_cmd[@]}"
+		shortcuts_added=1
 	fi
 fi
 
-log "done. Start SteamVR with the headset on, then: lambda1vr-pc   (or 'Half-Life VR' in the Steam library)"
+# --- summary ----------------------------------------------------------------------------------------------------
+log "done"
+printf '  game folder: %s\n' "$root"
+printf '  games:       %s\n' "$game_list"
+((launcher)) && printf '  launcher:    %s\n' "$bin_dir/lambda1vr-pc"
+printf '\nTo play: switch the headset on, start SteamVR, then '
+if ((shortcuts_added)); then
+	printf 'start "Half-Life VR" in the Steam library\n(or run lambda1vr-pc; -game bshift / -game gearbox for the expansions).\n'
+elif ((launcher)); then
+	printf 'run lambda1vr-pc\n(-game bshift / -game gearbox for the expansions).\n'
+else
+	printf 'run %s/xash3d from %s.\n' "$root" "$root"
+fi
+printf 'Set the SteamVR per-application resolution for the game to about 300%%. Guide: docs/linux-steamvr.md\n'
+

@@ -13,9 +13,9 @@ usage: build-linux-steamvr.sh [--work DIR] [--engine-repo URL] [--engine-branch 
                               [--hlsdk-repo URL] [--hlsdk-branch-prefix NAME] [--no-update] [--jobs N]
 
   --work DIR                  build tree (default: ${XDG_CACHE_HOME:-~/.cache}/lambda1vr-pc)
-  --engine-repo URL           Xash3D FWGS fork (default: git.marno.org/marnom/xash3d-fwgs)
+  --engine-repo URL           Xash3D FWGS fork (default: github.com/marnovdm/xash3d-fwgs)
   --engine-branch NAME        default: steamvr-linux
-  --hlsdk-repo URL            hlsdk-portable fork (default: git.marno.org/marnom/hlsdk-portable)
+  --hlsdk-repo URL            hlsdk-portable fork (default: github.com/marnovdm/hlsdk-portable)
   --hlsdk-branch-prefix NAME  branches NAME, NAME-bshift, NAME-opfor (default: steamvr-linux)
   --no-update                 build the existing checkouts as they are (no fetch/pull)
   --jobs N                    parallel build jobs (default: nproc)
@@ -23,9 +23,9 @@ EOF
 }
 
 work=${XDG_CACHE_HOME:-$HOME/.cache}/lambda1vr-pc
-engine_repo=https://git.marno.org/marnom/xash3d-fwgs.git
+engine_repo=https://github.com/marnovdm/xash3d-fwgs.git
 engine_branch=steamvr-linux
-hlsdk_repo=https://git.marno.org/marnom/hlsdk-portable.git
+hlsdk_repo=https://github.com/marnovdm/hlsdk-portable.git
 hlsdk_prefix=steamvr-linux
 openxr_repo=https://github.com/KhronosGroup/OpenXR-SDK.git
 openxr_tag=release-1.1.63
@@ -62,6 +62,18 @@ for tool in git gcc g++ cmake make python3 pkg-config; do
 	command -v "$tool" >/dev/null || { printf 'missing required command: %s\n' "$tool" >&2; exit 1; }
 done
 
+# Where the distribution keeps the 32-bit (i386) pkg-config files
+if [[ -d /usr/lib32/pkgconfig ]]; then
+	pc32=/usr/lib32/pkgconfig                    # Arch (multilib)
+elif [[ -d /usr/lib/i386-linux-gnu/pkgconfig ]]; then
+	pc32=/usr/lib/i386-linux-gnu/pkgconfig       # Debian, Ubuntu
+elif [[ -d /usr/lib64 && -d /usr/lib/pkgconfig ]]; then
+	pc32=/usr/lib/pkgconfig                      # Fedora, openSUSE (64-bit libraries are in /usr/lib64)
+else
+	printf 'no 32-bit pkg-config directory found: install the 32-bit (i386) development libraries (docs/linux-steamvr.md)\n' >&2
+	exit 1
+fi
+
 mkdir -p "$work"
 work=$(realpath "$work")
 src=$work/src
@@ -90,7 +102,7 @@ if [[ ! -f $prefix/lib/pkgconfig/openxr.pc ]]; then
 		log "cloning OpenXR-SDK $openxr_tag"
 		git -c advice.detachedHead=false clone --depth 1 --branch "$openxr_tag" "$openxr_repo" "$src/OpenXR-SDK"
 	fi
-	log "building the 32-bit OpenXR loader"
+	log "building the 32-bit OpenXR loader (once)"
 	run openxr cmake -S "$src/OpenXR-SDK" -B "$work/build/openxr" -DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_C_FLAGS=-m32 -DCMAKE_CXX_FLAGS=-m32 -DCMAKE_INSTALL_PREFIX="$prefix" \
 		-DDYNAMIC_LOADER=ON -DBUILD_TESTS=OFF -DBUILD_API_LAYERS=OFF -DBUILD_CONFORMANCE_TESTS=OFF \
@@ -105,11 +117,11 @@ log "updating engine submodules"
 # sync first: a submodule URL that changed in .gitmodules (the menu fork) does not reach existing clones otherwise
 run engine git -C "$src/xash3d-fwgs" submodule sync --recursive
 run engine git -C "$src/xash3d-fwgs" submodule update --init --recursive
-log "building the engine"
+log "building the engine (a few minutes the first time)"
 (
 	cd "$src/xash3d-fwgs"
 	export PKG_CONFIG_PATH=$prefix/lib/pkgconfig
-	export PKG_CONFIG_LIBDIR=/usr/lib32/pkgconfig:/usr/share/pkgconfig
+	export PKG_CONFIG_LIBDIR=$pc32:/usr/share/pkgconfig
 	run engine ./waf configure -o "$work/build/xash" -T release --enable-openxr
 	run engine ./waf build -j "$jobs"
 	rm -rf "$out/engine"

@@ -85,7 +85,8 @@ trap cleanup EXIT
 
 if [[ -z "$apk_path" ]]; then
 	apk_path="$temp_dir/lambda1vr-v1.6.2.apk"
-	curl -fL --retry 3 -o "$apk_path" "$release_url"
+	printf 'downloading %s\n' "$release_url"
+	curl -fL --retry 3 --progress-bar -o "$apk_path" "$release_url"
 fi
 
 [[ -f "$apk_path" ]] || {
@@ -133,7 +134,7 @@ install_variant() {
 	if [[ -n "$variant" ]]; then
 		rsync -a "$temp_dir/extracted/assets/$variant/models/" "$destination/models/"
 	fi
-	printf 'installed Lambda1VR assets: %s\n' "$destination"
+	printf '  Lambda1VR assets installed in %s\n' "$relative_destination"
 }
 
 [[ -z "$base_dir" ]] || install_variant "$base_dir" ""

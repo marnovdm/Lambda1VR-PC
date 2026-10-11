@@ -19,10 +19,11 @@ playtest fixes on top of the commits above:
 
 | Component | Source | Branch | Based on |
 | --- | --- | --- | --- |
-| Xash3D FWGS engine/OpenXR host | <https://git.marno.org/marnom/xash3d-fwgs> | `steamvr-linux` | `pc-openxr-lambda-parity` `c9f3ec56` |
-| Half-Life game code | <https://git.marno.org/marnom/hlsdk-portable> | `steamvr-linux` | `pc-openxr-lambda-parity` `ccff5db9` |
-| Blue Shift game code | <https://git.marno.org/marnom/hlsdk-portable> | `steamvr-linux-bshift` | `pc-openxr-bshift` `c61372aa` |
-| Opposing Force game code | <https://git.marno.org/marnom/hlsdk-portable> | `steamvr-linux-opfor` | `pc-openxr-opfor` `861b4cc2` |
+| Xash3D FWGS engine/OpenXR host | <https://github.com/marnovdm/xash3d-fwgs> | `steamvr-linux` | `pc-openxr-lambda-parity` `c9f3ec56` |
+| Half-Life game code | <https://github.com/marnovdm/hlsdk-portable> | `steamvr-linux` | `pc-openxr-lambda-parity` `ccff5db9` |
+| Blue Shift game code | <https://github.com/marnovdm/hlsdk-portable> | `steamvr-linux-bshift` | `pc-openxr-bshift` `c61372aa` |
+| Opposing Force game code | <https://github.com/marnovdm/hlsdk-portable> | `steamvr-linux-opfor` | `pc-openxr-opfor` `861b4cc2` |
+| Menu (VR settings pages) | <https://github.com/marnovdm/mainui_cpp> | `steamvr-linux` | FWGS `mainui_cpp` `master` |
 | 32-bit OpenXR loader | <https://github.com/KhronosGroup/OpenXR-SDK> | tag `release-1.1.63` | |
 
 Behavioral references retained during the port:

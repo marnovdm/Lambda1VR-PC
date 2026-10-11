@@ -127,24 +127,25 @@ def patch(data, rules):
 def apply(games, model, fix, done_text, changed_text):
     for game in games:
         path = os.path.join(ROOT, game, "models", model)
+        name = os.path.relpath(path, ROOT)
         if not os.path.isfile(path):
             continue
         data = open(path, "rb").read()
         if data[:4] != b"IDST":
-            print(f"{path}: not a studio model, skipped")
+            print(f"  {name}: not a studio model, skipped")
             continue
         new, changed, problems = fix(data)
         for problem in problems:
-            print(f"{path}: {problem} - left alone")
+            print(f"  {name}: {problem} - left alone")
         if not changed:
             if not problems:
-                print(f"{path}: {done_text}")
+                print(f"  {name}: {done_text}")
             continue
         if not os.path.exists(path + ".orig"):
             open(path + ".orig", "wb").write(data)
         open(path + ".new", "wb").write(new)
         os.replace(path + ".new", path)
-        print(f"{path}: {changed_text} {', '.join(changed)} (original: {path}.orig)")
+        print(f"  {name}: {changed_text} {', '.join(changed)} (original kept as .orig)")
 
 
 for (games, model), rules in RULES.items():

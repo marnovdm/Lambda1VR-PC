@@ -1,21 +1,34 @@
-# Lambda1VR PC packaging tools
+# Lambda1VR-PC for Linux + SteamVR
 
-## Linux + SteamVR: play Half-Life in VR
+Play **Half-Life, Blue Shift and Opposing Force in VR on Linux**, natively (no Proton), with SteamVR. This is a
+fork of [ObeseCatLord's Lambda1VR-PC](https://github.com/ObeseCatLord/Lambda1VR-PC) (the PC OpenXR port of Team
+Beef's [Lambda1VR](https://github.com/Team-Beef-Studios/Lambda1VR)), with the fixes and additions that came out of
+playing all three games through on a PlayStation VR2: hand-mounted HUD, point-and-release weapon selection, VR
+settings in the menu, mounted guns by hand, cinema mode for scripted cameras and more.
 
-**Start here if you want to play.** One script builds the engine and game code, stages Half-Life, Blue Shift and
-Opposing Force from your Steam copy, adds the Lambda1VR VR models and adds the games to your Steam library:
+## Install
+
+You need x86_64 Linux, Steam with SteamVR, a headset, and **Half-Life on Steam**. Then:
 
 ```sh
+git clone https://github.com/marnovdm/Lambda1VR-PC.git
+cd Lambda1VR-PC
 ./scripts/install-linux-steamvr.sh
 ```
 
-Requirements, controls, settings and troubleshooting: [`docs/linux-steamvr.md`](docs/linux-steamvr.md). This
-fork's engine and game code (fixes from playing through on real hardware with SteamVR) live in the
-[`xash3d-fwgs`](https://git.marno.org/marnom/xash3d-fwgs) and [`hlsdk-portable`](https://git.marno.org/marnom/hlsdk-portable)
-`steamvr-linux*` branches.
+The installer builds the engine and game code from source, copies the game data from your Steam installation
+(Steam's own copy is left untouched), downloads the Lambda1VR VR models and adds the games to your Steam library.
+**Build dependencies, controls, settings and troubleshooting: [`docs/linux-steamvr.md`](docs/linux-steamvr.md).**
 
-The rest of this README describes the upstream packaging and test tools (Sven Co-op, smoke tests).
+Source of the engine and game code (`steamvr-linux*` branches):
+[`xash3d-fwgs`](https://github.com/marnovdm/xash3d-fwgs/tree/steamvr-linux),
+[`mainui_cpp`](https://github.com/marnovdm/mainui_cpp/tree/steamvr-linux) (menu) and
+[`hlsdk-portable`](https://github.com/marnovdm/hlsdk-portable/tree/steamvr-linux).
 
+## Upstream packaging and test tools
+
+The rest of this README is ObeseCatLord's documentation of the upstream packaging and test tools (Sven Co-op,
+smoke tests). They are kept as they are and are not part of the Linux + SteamVR installer.
 
 This repository contains desktop packaging glue for the Linux/Windows OpenXR
 port. It intentionally does not redistribute Half-Life data or Lambda1VR's

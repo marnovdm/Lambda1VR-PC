@@ -4,8 +4,9 @@ Play Half-Life, Blue Shift and Opposing Force in VR on Linux, natively (no Proto
 runtime. This is the Lambda1VR-PC port (Xash3D FWGS + OpenXR, game code from Team Beef's Lambda1VR) with fixes and
 tuning from playing all three games through on a PlayStation VR2 with Sense controllers.
 
-- Engine: [`xash3d-fwgs`, branch `steamvr-linux`](https://git.marno.org/marnom/xash3d-fwgs/src/branch/steamvr-linux)
-- Game code: [`hlsdk-portable`, branches `steamvr-linux`, `steamvr-linux-bshift`, `steamvr-linux-opfor`](https://git.marno.org/marnom/hlsdk-portable)
+- Engine: [`xash3d-fwgs`, branch `steamvr-linux`](https://github.com/marnovdm/xash3d-fwgs/tree/steamvr-linux)
+  (menu: [`mainui_cpp`, branch `steamvr-linux`](https://github.com/marnovdm/mainui_cpp/tree/steamvr-linux))
+- Game code: [`hlsdk-portable`, branches `steamvr-linux`, `steamvr-linux-bshift`, `steamvr-linux-opfor`](https://github.com/marnovdm/hlsdk-portable/tree/steamvr-linux)
 - What changed compared to ObeseCatLord's branches: the commit message on each branch, and [Changes](#changes-from-the-upstream-port) below.
 
 Tested on Arch Linux, AMD GPU (Mesa/RADV), SteamVR 2.18 (beta), PS VR2 through Sony's PC adapter. Other headsets
@@ -27,20 +28,40 @@ and controllers that SteamVR supports should work, but they have not been tried.
       lib32-fontconfig lib32-libvorbis lib32-libogg lib32-opus lib32-bzip2 lib32-libx11 lib32-libxcb
   ```
 
-  On other distributions, install the equivalent i386 development packages of SDL2, OpenGL (libglvnd/Mesa),
-  FreeType, fontconfig, Vorbis, Ogg, Opus, bzip2, X11 and XCB, plus a GCC that can build with `-m32`.
+  Debian / Ubuntu (untested; package names from the Xash3D FWGS build notes):
+
+  ```sh
+  sudo dpkg --add-architecture i386 && sudo apt update
+  sudo apt install --no-install-recommends git build-essential gcc-multilib g++-multilib cmake python3 \
+      python3-pil pkg-config rsync curl unzip libsdl2-dev:i386 libgl-dev:i386 libfreetype-dev:i386 \
+      libfontconfig-dev:i386 libvorbis-dev:i386 libogg-dev:i386 libopus-dev:i386 libopusfile-dev:i386 \
+      libbz2-dev:i386 libx11-dev:i386 libxcb1-dev:i386
+  ```
+
+  Fedora (untested):
+
+  ```sh
+  sudo dnf install git gcc gcc-c++ glibc-devel.i686 libstdc++-devel.i686 cmake make python3 python3-pillow \
+      pkgconf rsync curl unzip sdl2-compat-devel.i686 mesa-libGL-devel.i686 freetype-devel.i686 \
+      fontconfig-devel.i686 libvorbis-devel.i686 libogg-devel.i686 opus-devel.i686 opusfile-devel.i686 \
+      bzip2-devel.i686 libX11-devel.i686 libxcb-devel.i686
+  ```
+
+  Other distributions: the i386 development packages of SDL2, OpenGL, FreeType, fontconfig, Vorbis, Ogg, Opus,
+  bzip2, X11 and XCB, plus a GCC that can build with `-m32`. If the build fails on your distribution, please open
+  an issue with the log the installer points to.
 
 ## Install
 
 ```sh
-git clone https://git.marno.org/marnom/Lambda1VR-PC.git
+git clone https://github.com/marnovdm/Lambda1VR-PC.git
 cd Lambda1VR-PC
 ./scripts/install-linux-steamvr.sh
 ```
 
 What it does (all steps can be skipped, see `--help`):
 
-1. Checks the packages above (Arch only; elsewhere it only checks the commands).
+1. Checks the packages above (Arch only; elsewhere it only checks the build commands).
 2. Builds a 32-bit OpenXR loader, the engine and the three game libraries in `~/.cache/lambda1vr-pc`
    (`scripts/build-linux-steamvr.sh`, a few minutes the first time).
 3. Creates the game folder `~/Games/lambda1vr-pc` from a **copy** of your Steam `Half-Life` game data (about 1 GB
@@ -193,6 +214,8 @@ through the menu. To force one at every start, add `+set name value` to the Stea
 | `vr_weapon_pointer_scale` | `0.00065` | Weapon grid size in metres per HUD pixel (the Half-Life grid is about 57 cm long) |
 | `vr_weapon_pointer_yaw` | `40` | Weapon grid turn in degrees, like `vr_hud_hand_yaw` (lower = far end turned more towards you) |
 | `vr_notify` | `0` | `1` = show console messages (top left) over the HUD |
+| `vr_cinema` | `1` | Scripted camera views (`trigger_camera`) are shown on a flat screen in the room instead of moving your whole view; `0` = original behaviour |
+| `vr_cinema_fade` | `0.2` | Seconds the cinema screen and the world take to fade in and out |
 
 ### Graphics and sound
 
@@ -210,6 +233,7 @@ through the menu. To force one at every start, add `+set name value` to the Stea
 | Setting | Default | Meaning |
 |---|---|---|
 | `chargerfix` | `1` (set by the launcher) | Health/HEV chargers give the "denied" sound once you are full instead of charging on while you hold use. `0` = original behaviour. Not saved by the game, so the launcher sets it at every start |
+| `vr_tank_grab` | `1` | Mounted guns (machine guns, mortars, the tank's gun): use it with your hand on its handles, then aim by swinging the handles around the gun's pivot. `0` = the gun points where your controller points. Walk away to get off |
 
 ### Debugging
 
@@ -251,6 +275,14 @@ SteamVR needed, among others:
   VR controllers no longer interferes.
 - **Sound**: effects slightly quieter than speech.
 - **Wall chargers** stop "charging" once you are full (`chargerfix`, set by the launcher).
+- **Mounted guns by hand**: use a mounted gun with your hand on its handles, aim it by swinging them
+  (`vr_tank_grab`); a button next to a gun (the tank cannon in *Surface Tension*) is no longer taken by the gun.
+- **Cinema mode**: scripted camera views play on a flat screen in the room instead of yanking your head around
+  (`vr_cinema`).
+- **VR settings in the menu**: Options → VR, four pages, usable with the pointer.
+- **Gluon gun**: one beam, from the gun (it drew a second one from your head).
+- **Upstream fixes**: crash, prediction and rendering fixes from Xash3D FWGS and hlsdk-portable, cherry-picked
+  (`git log --grep "cherry picked"` in the engine and game-code repositories).
 - **Weapon models**: reload sounds for the revolver and the Opposing Force Desert Eagle, sniper rifle and M249; no
   loose shell under the shotgun.
 - Fixed crashes (laser sight, `impulse 101`) and missing hands/flashlight models.
@@ -258,11 +290,13 @@ SteamVR needed, among others:
 ## Known issues
 
 - The **reach gesture** (stretch your arm out to use something) does not trigger; use the stick clicks.
-- The controller **menu button** (Sense Options/Create) may need a SteamVR binding change; both stick clicks always
-  open the menu.
+- The controller **menu button** (Sense Options) does not open the menu: SteamVR's generated Touch binding and
+  Sony's Touch emulation use different paths for it. Both stick clicks together always open the menu.
 - Haptics in gameplay are unconfirmed (`vr_testhaptic` works).
 - Blue Shift and Opposing Force were played less than Half-Life.
 - They Hunger and Sven Co-op are not covered by this installer (see the main README for the upstream Sven tools).
+- The engine also has an experimental Counter-Strike VR mode (`-game cstrike`, for a matching client DLL). It is
+  not part of this release and not supported yet.
 
 ## Troubleshooting
 
@@ -274,3 +308,12 @@ SteamVR needed, among others:
 - **Build failed:** the installer prints the end of the failing log; all build logs are in
   `~/.cache/lambda1vr-pc/logs/`. Usually a missing 32-bit package.
 - **Steam shortcuts missing:** close Steam completely and run `./scripts/steam-shortcuts.py`.
+
+## Credits and licences
+
+- [Team Beef](https://github.com/Team-Beef-Studios/Lambda1VR): Lambda1VR, the Quest port this is based on, and its
+  VR models (downloaded from their release; non-commercial use, readme kept next to them).
+- [ObeseCatLord](https://github.com/ObeseCatLord/Lambda1VR-PC): the PC OpenXR port of Lambda1VR this fork builds on.
+- [Xash3D FWGS](https://github.com/FWGS/xash3d-fwgs) and [hlsdk-portable](https://github.com/FWGS/hlsdk-portable).
+- The engine and game code keep their upstream licences (Xash3D FWGS; the Half-Life SDK licence from Valve for the
+  game code). This repository's scripts and docs: MIT. Half-Life itself and its content are not included: you need your own copy on Steam.

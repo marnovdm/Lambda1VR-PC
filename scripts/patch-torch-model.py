@@ -45,10 +45,10 @@ for game in ("valve", "bshift", "gearbox"):
     data = open(path, "rb").read()
     new, count = patch(data)
     if count == 0:
-        print(f"{path}: already plain")
+        print(f"  {os.path.relpath(path, ROOT)}: already done")
         continue
     if not os.path.exists(path + ".orig"):
         open(path + ".orig", "wb").write(data)
     open(path + ".new", "wb").write(new)
     os.replace(path + ".new", path)
-    print(f"{path}: {count} orange pixels painted over (original: {path}.orig)")
+    print(f"  {os.path.relpath(path, ROOT)}: logo painted over (original kept as .orig)")
