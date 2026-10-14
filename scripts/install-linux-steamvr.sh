@@ -216,6 +216,8 @@ if [[ -n $resrced ]]; then
 		dir=${pair%%:*} src=$step4/${pair#*:}/maps
 		[[ -d $root/$dir/maps && -d $src ]] || continue
 		cp "$src"/*_detail.txt "$root/$dir/maps/"
+		# Crates shimmer with their fine metal/wood grain at a distance in VR; every other surface keeps it.
+		sed -i '/^[^[:space:]]*crate/Id' "$root/$dir/maps/"*_detail.txt
 		cfg=$root/$dir/opengl.cfg
 		if [[ -f $cfg ]] && grep -q '^r_detailtextures ' "$cfg"; then
 			sed -i 's/^r_detailtextures .*/r_detailtextures "1"/' "$cfg"
