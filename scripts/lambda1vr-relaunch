@@ -34,6 +34,8 @@ stop() {
 	game=$(tr '\0' '\n' </proc/"$pid"/cmdline | grep -A1 -x -- -game | tail -n 1)
 	[[ -n $game ]] || game=valve
 	sav=$root/$game/SAVE/quick.sav
+	# the save folder is SAVE in valve, save in the expansions (case-sensitive on Linux)
+	[[ -d $root/$game/SAVE || ! -d $root/$game/save ]] || sav=$root/$game/save/quick.sav
 	before=$(stat -c %Y "$sav" 2>/dev/null || echo 0)
 
 	send 'save quick'
